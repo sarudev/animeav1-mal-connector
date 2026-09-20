@@ -3,14 +3,19 @@
 // avisar al background cuando cambia de estado.
 (() => {
   const MEDIA_PATH_REGEX = /^\/media\/([^/]+)(?:\/([^/]+))?/;
-  const NAME_SELECTOR =
-    'body > div > div > main > article > div > div > header > div > div > a';
-  const BUTTON_SELECTOR =
-    'body > div > div > div > div > div > button:nth-child(1)';
+  // No depender de la jerarqu?a de divs de AnimeAV1: cambia con frecuencia.
+  const NAME_SELECTORS = [
+    'main article header a[href^="/media/"]',
+    'main article header a',
+    'main header a[href^="/media/"]',
+  ];
+  const WATCH_BUTTON_SELECTOR =
+    'button:has(span.ic-eye), button:has(span.ic-eye-off)';
 
   let currentSlug = null;
   let currentEpisode = null;
   let lastSentName = null;
+  let lastSentSlug = null;
   let lastKnownWatched = null;
   let observedButton = null;
 
@@ -20,19 +25,26 @@
 
     const slug = match[1];
     const episodeSegment = match[2];
-    const episodeMatch = episodeSegment ? episodeSegment.match(/\d+/) : null;
-    const episode = episodeMatch ? parseInt(episodeMatch[0], 10) : null;
+    // Un cap?tulo usa un segmento num?rico (p. ej. /media/nombre/12). No
+    // extraer n?meros de posibles rutas futuras como "temporada-2".
+    const episode = /^\d+$/.test(episodeSegment || '')
+      ? parseInt(episodeSegment, 10)
+      : null;
 
     return { slug, episode };
   }
 
   function getAnimeName() {
-    const el = document.querySelector(NAME_SELECTOR);
-    return el ? el.innerText.trim() : null;
+    for (const selector of NAME_SELECTORS) {
+      const el = document.querySelector(selector);
+      const name = el?.textContent?.trim();
+      if (name) return name;
+    }
+    return null;
   }
 
   function getWatchButton() {
-    return document.querySelector(BUTTON_SELECTOR);
+    return document.querySelector(WATCH_BUTTON_SELECTOR);
   }
 
   function getWatchedStateFromButton(button) {
@@ -55,7 +67,10 @@
   function maybeSendNameUpdate() {
     if (!currentSlug) return;
     const name = getAnimeName();
-    if (name && name !== lastSentName) {
+    // Enviar el slug aunque el encabezado todav?a no haya sido renderizado.
+    // As? el popup reconoce el episodio durante la carga de la SPA.
+    if (currentSlug !== lastSentSlug || (name && name !== lastSentName)) {
+      lastSentSlug = currentSlug;
       lastSentName = name;
       sendMessageSafe({ type: 'PAGE_CONTEXT', slug: currentSlug, name });
     }
@@ -81,7 +96,7 @@
   const WATCH_POLL_MAX_ATTEMPTS = 20; // ~3s en total
 
   function handleDocumentClick(event) {
-    const clickedButton = event.target.closest(BUTTON_SELECTOR);
+    const clickedButton = event.target.closest(WATCH_BUTTON_SELECTOR);
     if (!clickedButton) return;
 
     const slug = currentSlug;
@@ -129,6 +144,7 @@
       currentEpisode = null;
       lastSentName = null;
       observedButton = null;
+      lastSentSlug = null;
       return;
     }
 
@@ -139,6 +155,7 @@
     if (slugChanged) {
       lastSentName = null;
       lastKnownWatched = null;
+      lastSentSlug = null;
       observedButton = null;
     }
 

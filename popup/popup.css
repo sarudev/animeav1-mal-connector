@@ -1,71 +1,157 @@
+:root {
+  --paper: #111113;
+  --paper-alt: #1c1c1f;
+  --paper-highlight: #26262a;
+  --ink: #e7e6e2;
+  --muted: #8f8d89;
+  --line: #333237;
+  --indigo: #93a7c5;
+  --indigo-deep: #3f4f6b;
+  --indigo-deep-hover: #51648a;
+  --oxblood: #d98f85;
+  --oxblood-bg: #2c201f;
+  --oxblood-border: #4a3330;
+  --ok-bg: #1c231c;
+  --ok-ink: #a8c79b;
+  --ok-border: #35402f;
+  --font-head: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-body);
   width: 320px;
   margin: 0;
   padding: 0;
-  color: #1b1b1b;
+  color: var(--ink);
+  background: var(--paper);
 }
 
 main {
-  padding: 12px 14px;
+  padding: 14px 16px 12px;
+  position: relative;
+}
+
+/* perforated edge along the top, like a torn ticket stub */
+main::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-image: radial-gradient(circle, var(--paper) 2.5px, transparent 2.6px);
+  background-size: 14px 6px;
+  background-position: 3px 0;
+  background-color: var(--indigo-deep);
 }
 
 h1 {
-  font-size: 15px;
-  margin: 0 0 10px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.2px;
+  margin: 10px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+  color: var(--ink);
 }
 
 h2 {
+  font-family: var(--font-head);
   font-size: 13px;
-  margin: 10px 0 6px;
+  font-weight: 600;
+  margin: 4px 0 8px;
+  color: var(--indigo);
 }
 
 section {
-  margin-bottom: 10px;
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+
+section:last-of-type {
+  border-bottom: none;
 }
 
 .status {
   font-size: 12px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  background: #eee;
+  padding: 7px 10px;
+  border-radius: 3px;
+  background: var(--paper-alt);
+  color: var(--muted);
+  border: 1px solid var(--line);
 }
 
 .status.ok {
-  background: #e3f5e5;
-  color: #1e6b2c;
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+  border-color: var(--ok-border);
 }
 
 .status.error {
-  background: #fbe6e6;
-  color: #a11f1f;
+  background: var(--oxblood-bg);
+  color: var(--oxblood);
+  border-color: var(--oxblood-border);
 }
 
 #page-context p,
 #linked-view p {
   font-size: 12px;
-  margin: 2px 0;
+  line-height: 1.5;
+  margin: 3px 0;
+  color: var(--muted);
+}
+
+#page-context strong,
+#linked-view strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+#detected-slug,
+#linked-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink);
+  background: var(--paper-alt);
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
 }
 
 .anime-card {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  background: var(--paper-alt);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 8px;
+  margin-bottom: 8px;
 }
 
 .anime-thumb {
   width: 40px;
   height: 56px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 2px;
   flex-shrink: 0;
-  background: #ddd;
+  background: var(--line);
+  border: 1px solid var(--muted);
 }
 
 #linked-title,
 .result-link {
-  color: #2955a3;
+  color: var(--indigo);
   text-decoration: none;
+  font-weight: 600;
 }
 
 #linked-title:hover,
@@ -76,7 +162,7 @@ section {
 .search-row {
   display: flex;
   gap: 6px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .search-row input {
@@ -85,65 +171,147 @@ section {
 
 #search-results {
   list-style: none;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   padding: 0;
   max-height: 150px;
   overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper-alt);
+}
+
+#search-results:empty {
+  border: none;
+  background: none;
 }
 
 #search-results li {
   font-size: 12px;
-  padding: 3px 0;
+  padding: 5px 8px;
+  border-bottom: 1px dashed var(--line);
+}
+
+#search-results li:last-child {
+  border-bottom: none;
+}
+
+#search-results li:has(input:checked) {
+  background: var(--paper-highlight);
 }
 
 #search-results label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .result-thumb {
   width: 28px;
   height: 40px;
   object-fit: cover;
-  border-radius: 3px;
+  border-radius: 2px;
   flex-shrink: 0;
-  background: #ddd;
+  background: var(--line);
 }
 
 .manual-row {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .manual-row label {
   font-size: 11px;
-  color: #555;
+  color: var(--muted);
 }
 
-input,
-button {
+.manual-row input {
+  font-family: var(--font-mono);
+}
+
+input {
   font-size: 12px;
-  padding: 5px 7px;
-  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper-alt);
+  color: var(--ink);
+}
+
+input:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 1px;
 }
 
 button {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: 1px solid var(--indigo-deep);
+  background: var(--indigo-deep);
+  color: var(--ink);
   cursor: pointer;
 }
 
+button:hover {
+  background: var(--indigo-deep-hover);
+  border-color: var(--indigo-deep-hover);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--line);
+  cursor: not-allowed;
+}
+
+#change-link-btn {
+  background: transparent;
+  color: var(--indigo);
+}
+
+#change-link-btn:hover {
+  background: var(--paper-alt);
+  color: var(--indigo);
+}
+
+#confirm-link-btn {
+  width: 100%;
+}
+
 .error {
-  color: #a11f1f;
+  color: var(--oxblood);
   font-size: 12px;
+  margin-top: 6px;
 }
 
 footer {
-  margin-top: 10px;
+  margin-top: 4px;
   font-size: 11px;
+  text-align: left;
 }
 
 footer a {
-  color: #2955a3;
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+footer a:hover {
+  color: var(--indigo);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button {
+    transition: background-color 120ms ease, border-color 120ms ease;
+  }
 }
