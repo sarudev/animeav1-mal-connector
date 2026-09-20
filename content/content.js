@@ -18,6 +18,8 @@
   let lastSentSlug = null;
   let lastKnownWatched = null;
   let observedButton = null;
+  let lastAutoLinkKey = null;
+  let toastTimer = null;
 
   function parseLocation() {
     const match = MEDIA_PATH_REGEX.exec(window.location.pathname);
@@ -25,11 +27,9 @@
 
     const slug = match[1];
     const episodeSegment = match[2];
-    // Un cap?tulo usa un segmento num?rico (p. ej. /media/nombre/12). No
-    // extraer n?meros de posibles rutas futuras como "temporada-2".
-    const episode = /^\d+$/.test(episodeSegment || '')
-      ? parseInt(episodeSegment, 10)
-      : null;
+    // La extension solo actua en un episodio, no en /media/{name}.
+    if (!/^\d+$/.test(episodeSegment || '')) return null;
+    const episode = parseInt(episodeSegment, 10);
 
     return { slug, episode };
   }
@@ -64,6 +64,32 @@
     }
   }
 
+
+  function showAutoLinkToast(title) {
+    let toast = document.getElementById('mal-connector-auto-link-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'mal-connector-auto-link-toast';
+      toast.setAttribute('role', 'status');
+      toast.style.cssText = 'position:fixed;top:16px;right:16px;z-index:2147483647;max-width:360px;padding:14px 18px;border-radius:8px;background:#2e7d32;color:#fff;font:500 14px/1.4 system-ui,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.28)';
+      document.documentElement.appendChild(toast);
+    }
+    toast.textContent = `Vinculado automaticamente con MAL: ${title}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.remove(), 30000);
+  }
+
+  function maybeAutoLink(name) {
+    const key = `${currentSlug}:${name}`;
+    if (key === lastAutoLinkKey) return;
+    lastAutoLinkKey = key;
+    chrome.runtime
+      .sendMessage({ type: 'AUTO_LINK_ANIME', slug: currentSlug, name })
+      .then((response) => {
+        if (response?.ok && response.autoLinked) showAutoLinkToast(response.link.title);
+      })
+      .catch(() => {});
+  }
   function maybeSendNameUpdate() {
     if (!currentSlug) return;
     const name = getAnimeName();
@@ -74,7 +100,9 @@
       lastSentName = name;
       sendMessageSafe({ type: 'PAGE_CONTEXT', slug: currentSlug, name });
     }
+    if (name) maybeAutoLink(name);
   }
+
 
   // Registra el estado actual del botón como línea base, sin depender de
   // MutationObserver (SvelteKit suele reemplazar los nodos del ícono en vez
@@ -145,6 +173,7 @@
       lastSentName = null;
       observedButton = null;
       lastSentSlug = null;
+      lastAutoLinkKey = null;
       return;
     }
 
@@ -156,6 +185,7 @@
       lastSentName = null;
       lastKnownWatched = null;
       lastSentSlug = null;
+      lastAutoLinkKey = null;
       observedButton = null;
     }
 

@@ -92,12 +92,37 @@ async function handleToggleWatched({ slug, episode, watched }) {
 async function setBadgeForTab(tabId, linked) {
   if (tabId == null) return;
   await chrome.action.setBadgeText({ tabId, text: linked ? 'OK' : '?' });
+
   await chrome.action.setBadgeBackgroundColor({
     tabId,
     color: linked ? '#2e7d32' : '#c62828',
   });
 }
 
+
+async function autoLinkAnime(slug, name, tabId) {
+  const existingLink = await getLink(slug);
+  if (existingLink) {
+    await setBadgeForTab(tabId, true);
+    return { ok: true, autoLinked: false, link: existingLink };
+  }
+
+  const results = await searchAnime(name);
+  const anime = results[0];
+  if (!anime) {
+    await setBadgeForTab(tabId, false);
+    return { ok: true, autoLinked: false, reason: 'no_results' };
+  }
+
+  const link = {
+    malId: anime.id,
+    title: anime.title,
+    pictureUrl: anime.main_picture?.medium || null,
+  };
+  await setLink(slug, link);
+  await setBadgeForTab(tabId, true);
+  return { ok: true, autoLinked: true, link };
+}
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
     try {
@@ -115,6 +140,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           break;
         }
 
+        case 'AUTO_LINK_ANIME': {
+          const tabId = sender.tab?.id;
+          if (tabId == null || !message.slug || !message.name) {
+            sendResponse({ ok: false, error: 'missing_context' });
+            return;
+          }
+          const result = await autoLinkAnime(message.slug, message.name, tabId);
+          sendResponse(result);
+          break;
+        }
         case 'GET_TAB_CONTEXT': {
           const context = tabContexts.get(message.tabId) || null;
           const link = context ? await getLink(context.slug) : null;
