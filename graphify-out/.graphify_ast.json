@@ -1,0 +1,2044 @@
+{
+  "nodes": [
+    {
+      "id": "background_background",
+      "label": "background.js",
+      "file_type": "code",
+      "source_file": "background/background.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "background_background_tabcontexts",
+      "label": "tabContexts",
+      "file_type": "code",
+      "source_file": "background/background.js",
+      "source_location": "L12",
+      "_origin": "ast"
+    },
+    {
+      "id": "background_background_todayiso",
+      "label": "todayISO()",
+      "file_type": "code",
+      "source_file": "background/background.js",
+      "source_location": "L14",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_background_computelistupdate",
+      "label": "computeListUpdate()",
+      "file_type": "code",
+      "source_file": "background/background.js",
+      "source_location": "L34",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_background_handletogglewatched",
+      "label": "handleToggleWatched()",
+      "file_type": "code",
+      "source_file": "background/background.js",
+      "source_location": "L67",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_background_setbadgefortab",
+      "label": "setBadgeForTab()",
+      "file_type": "code",
+      "source_file": "background/background.js",
+      "source_location": "L92",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_background_autolinkanime",
+      "label": "autoLinkAnime()",
+      "file_type": "code",
+      "source_file": "background/background.js",
+      "source_location": "L103",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal",
+      "label": "mal.js",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal_refreshaccesstoken",
+      "label": "refreshAccessToken()",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L7",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal_getaccesstoken",
+      "label": "getAccessToken()",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L38",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal_malfetch",
+      "label": "malFetch()",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L53",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal_getcurrentuser",
+      "label": "getCurrentUser()",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L72",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal_searchanime",
+      "label": "searchAnime()",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L76",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal_getanimedetails",
+      "label": "getAnimeDetails()",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L86",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_mal_updateliststatus",
+      "label": "updateListStatus()",
+      "file_type": "code",
+      "source_file": "background/mal.js",
+      "source_location": "L93",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_storage",
+      "label": "storage.js",
+      "file_type": "code",
+      "source_file": "background/storage.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "background_storage_getmalauth",
+      "label": "getMalAuth()",
+      "file_type": "code",
+      "source_file": "background/storage.js",
+      "source_location": "L7",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_storage_setmalauth",
+      "label": "setMalAuth()",
+      "file_type": "code",
+      "source_file": "background/storage.js",
+      "source_location": "L12",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_storage_getanimelinks",
+      "label": "getAnimeLinks()",
+      "file_type": "code",
+      "source_file": "background/storage.js",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_storage_getlink",
+      "label": "getLink()",
+      "file_type": "code",
+      "source_file": "background/storage.js",
+      "source_location": "L21",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_storage_setlink",
+      "label": "setLink()",
+      "file_type": "code",
+      "source_file": "background/storage.js",
+      "source_location": "L26",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "background_storage_removelink",
+      "label": "removeLink()",
+      "file_type": "code",
+      "source_file": "background/storage.js",
+      "source_location": "L32",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content",
+      "label": "content.js",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_parselocation",
+      "label": "parseLocation()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L24",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_getanimename",
+      "label": "getAnimeName()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L37",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_getwatchbutton",
+      "label": "getWatchButton()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L46",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_getwatchedstatefrombutton",
+      "label": "getWatchedStateFromButton()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L50",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_sendmessagesafe",
+      "label": "sendMessageSafe()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L58",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_showautolinktoast",
+      "label": "showAutoLinkToast()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L68",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_maybeautolink",
+      "label": "maybeAutoLink()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L82",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_maybesendnameupdate",
+      "label": "maybeSendNameUpdate()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L93",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_syncbuttonbaseline",
+      "label": "syncButtonBaseline()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L111",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_handledocumentclick",
+      "label": "handleDocumentClick()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L126",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "content_content_handlenavigation",
+      "label": "handleNavigation()",
+      "file_type": "code",
+      "source_file": "content/content.js",
+      "source_location": "L167",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest",
+      "label": "manifest.json",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_manifest_version",
+      "label": "manifest_version",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L2",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_name",
+      "label": "name",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L3",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_version",
+      "label": "version",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_description",
+      "label": "description",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L5",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_permissions",
+      "label": "permissions",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L6",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_host_permissions",
+      "label": "host_permissions",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L10",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_background",
+      "label": "background",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L15",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_background_service_worker",
+      "label": "service_worker",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L16",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_background_type",
+      "label": "type",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L17",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_content_scripts",
+      "label": "content_scripts",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L19",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_action",
+      "label": "action",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L30",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_action_default_popup",
+      "label": "default_popup",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L31",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_action_default_icon",
+      "label": "default_icon",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L32",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_default_icon_16",
+      "label": "16",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L33",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_default_icon_48",
+      "label": "48",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L34",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_default_icon_128",
+      "label": "128",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L35",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_options_page",
+      "label": "options_page",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L38",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_icons",
+      "label": "icons",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L39",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_icons_16",
+      "label": "16",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L40",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_icons_48",
+      "label": "48",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L41",
+      "_origin": "ast"
+    },
+    {
+      "id": "manifest_icons_128",
+      "label": "128",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L42",
+      "_origin": "ast"
+    },
+    {
+      "id": "options_options",
+      "label": "options.js",
+      "file_type": "code",
+      "source_file": "options/options.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "options_options_els",
+      "label": "els",
+      "file_type": "code",
+      "source_file": "options/options.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "options_options_showstatus",
+      "label": "showStatus()",
+      "file_type": "code",
+      "source_file": "options/options.js",
+      "source_location": "L10",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "options_options_loadauth",
+      "label": "loadAuth()",
+      "file_type": "code",
+      "source_file": "options/options.js",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup",
+      "label": "popup.js",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_state",
+      "label": "state",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_els",
+      "label": "els",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L9",
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_sendmessage",
+      "label": "sendMessage()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L30",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_showerror",
+      "label": "showError()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L34",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_malanimeurl",
+      "label": "malAnimeUrl()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L39",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_renderlinked",
+      "label": "renderLinked()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L43",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_renderlinkform",
+      "label": "renderLinkForm()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L59",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_updateconfirmbuttonstate",
+      "label": "updateConfirmButtonState()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L65",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_rendersearchresults",
+      "label": "renderSearchResults()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L70",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_checkconnection",
+      "label": "checkConnection()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L116",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "popup_popup_loadcontext",
+      "label": "loadContext()",
+      "file_type": "code",
+      "source_file": "popup/popup.js",
+      "source_location": "L131",
+      "_callable": true,
+      "_origin": "ast"
+    }
+  ],
+  "edges": [
+    {
+      "source": "background_background",
+      "target": "background_storage",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_storage_getlink",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_storage_setlink",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_storage_removelink",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_storage_getmalauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_storage_setmalauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_mal",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_mal_searchanime",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_mal_getanimedetails",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_mal_updateliststatus",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_mal_getcurrentuser",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_tabcontexts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_todayiso",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_computelistupdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_handletogglewatched",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_setbadgefortab",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L92",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_autolinkanime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L103",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_computelistupdate",
+      "target": "background_background_todayiso",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_handletogglewatched",
+      "target": "background_background_computelistupdate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_autolinkanime",
+      "target": "background_background_setbadgefortab",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L106",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_setbadgefortab",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L138",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_autolinkanime",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L149",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background",
+      "target": "background_background_handletogglewatched",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L202",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_storage",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_storage_getmalauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_storage_setmalauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_mal_refreshaccesstoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_mal_getaccesstoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_mal_malfetch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_mal_getcurrentuser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_mal_searchanime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_mal_getanimedetails",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal",
+      "target": "background_mal_updateliststatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_getaccesstoken",
+      "target": "background_mal_refreshaccesstoken",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_malfetch",
+      "target": "background_mal_getaccesstoken",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_getcurrentuser",
+      "target": "background_mal_malfetch",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_searchanime",
+      "target": "background_mal_malfetch",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_getanimedetails",
+      "target": "background_mal_malfetch",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L90",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_updateliststatus",
+      "target": "background_mal_malfetch",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L95",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage",
+      "target": "background_storage_getmalauth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage",
+      "target": "background_storage_setmalauth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage",
+      "target": "background_storage_getanimelinks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage",
+      "target": "background_storage_getlink",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage",
+      "target": "background_storage_setlink",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage",
+      "target": "background_storage_removelink",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage_getlink",
+      "target": "background_storage_getanimelinks",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage_setlink",
+      "target": "background_storage_getanimelinks",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_storage_removelink",
+      "target": "background_storage_getanimelinks",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/storage.js",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_parselocation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_getanimename",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_getwatchbutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_getwatchedstatefrombutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_sendmessagesafe",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_showautolinktoast",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_maybeautolink",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_maybesendnameupdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_syncbuttonbaseline",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L111",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_handledocumentclick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L126",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_handlenavigation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L167",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_handledocumentclick",
+      "relation": "indirect_call",
+      "context": "argument",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "content/content.js",
+      "source_location": "L165",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_handlenavigation",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L201",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_maybesendnameupdate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L203",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content",
+      "target": "content_content_syncbuttonbaseline",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L204",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_maybeautolink",
+      "target": "content_content_showautolinktoast",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L89",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_maybesendnameupdate",
+      "target": "content_content_getanimename",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L95",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_maybesendnameupdate",
+      "target": "content_content_sendmessagesafe",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L101",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_maybesendnameupdate",
+      "target": "content_content_maybeautolink",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L103",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_syncbuttonbaseline",
+      "target": "content_content_getwatchbutton",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L112",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_syncbuttonbaseline",
+      "target": "content_content_getwatchedstatefrombutton",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L115",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_handledocumentclick",
+      "target": "content_content_getwatchbutton",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L137",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_handledocumentclick",
+      "target": "content_content_getwatchedstatefrombutton",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L138",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_handledocumentclick",
+      "target": "content_content_sendmessagesafe",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L146",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_handlenavigation",
+      "target": "content_content_parselocation",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L168",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_handlenavigation",
+      "target": "content_content_maybesendnameupdate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L192",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "content_content_handlenavigation",
+      "target": "content_content_syncbuttonbaseline",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "content/content.js",
+      "source_location": "L193",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_manifest_version",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_name",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_version",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_description",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_permissions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_host_permissions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_background",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_background",
+      "target": "manifest_background_service_worker",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_background",
+      "target": "manifest_background_type",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_content_scripts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_action",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_action",
+      "target": "manifest_action_default_popup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_action",
+      "target": "manifest_action_default_icon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_action_default_icon",
+      "target": "manifest_default_icon_16",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_action_default_icon",
+      "target": "manifest_default_icon_48",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_action_default_icon",
+      "target": "manifest_default_icon_128",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_options_page",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest",
+      "target": "manifest_icons",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_icons",
+      "target": "manifest_icons_16",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_icons",
+      "target": "manifest_icons_48",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "manifest_icons",
+      "target": "manifest_icons_128",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "options_options",
+      "target": "options_options_els",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "options/options.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "options_options",
+      "target": "options_options_showstatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "options/options.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "options_options",
+      "target": "options_options_loadauth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "options/options.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "options_options",
+      "target": "options_options_showstatus",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "options/options.js",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_els",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_sendmessage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_showerror",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_malanimeurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_renderlinked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_renderlinkform",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_updateconfirmbuttonstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_rendersearchresults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_checkconnection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L116",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_loadcontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L131",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_sendmessage",
+      "target": "popup_popup_sendmessage",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_renderlinked",
+      "target": "popup_popup_malanimeurl",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_renderlinkform",
+      "target": "popup_popup_showerror",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L62",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_rendersearchresults",
+      "target": "popup_popup_updateconfirmbuttonstate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_rendersearchresults",
+      "target": "popup_popup_malanimeurl",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L98",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_checkconnection",
+      "target": "popup_popup_sendmessage",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L117",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_loadcontext",
+      "target": "popup_popup_sendmessage",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L136",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_loadcontext",
+      "target": "popup_popup_renderlinked",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L155",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup_loadcontext",
+      "target": "popup_popup_renderlinkform",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L157",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_renderlinkform",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L162",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_showerror",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L168",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_sendmessage",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L171",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_rendersearchresults",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L176",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_updateconfirmbuttonstate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L189",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "popup_popup",
+      "target": "popup_popup_renderlinked",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "popup/popup.js",
+      "source_location": "L226",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_handletogglewatched",
+      "target": "background_storage_getlink",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_handletogglewatched",
+      "target": "background_mal_getanimedetails",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_handletogglewatched",
+      "target": "background_mal_updateliststatus",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L88",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_autolinkanime",
+      "target": "background_storage_getlink",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L104",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_autolinkanime",
+      "target": "background_mal_searchanime",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L110",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_background_autolinkanime",
+      "target": "background_storage_setlink",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/background.js",
+      "source_location": "L122",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_refreshaccesstoken",
+      "target": "background_storage_setmalauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "background_mal_getaccesstoken",
+      "target": "background_storage_getmalauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "background/mal.js",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "failed_sources": [],
+  "extracted_sources": [
+    "D:\\Programming\\HTML\\mal-connector-extension\\background\\background.js",
+    "D:\\Programming\\HTML\\mal-connector-extension\\background\\mal.js",
+    "D:\\Programming\\HTML\\mal-connector-extension\\background\\storage.js",
+    "D:\\Programming\\HTML\\mal-connector-extension\\content\\content.js",
+    "D:\\Programming\\HTML\\mal-connector-extension\\manifest.json",
+    "D:\\Programming\\HTML\\mal-connector-extension\\options\\options.js",
+    "D:\\Programming\\HTML\\mal-connector-extension\\popup\\popup.js"
+  ]
+}

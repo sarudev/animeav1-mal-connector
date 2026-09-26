@@ -1,0 +1,6 @@
+D:\Programming\HTML\mal-connector-extension\.roo\skills\claude\SKILL.md
+D:\Programming\HTML\mal-connector-extension\options\options.html
+D:\Programming\HTML\mal-connector-extension\popup\popup.html
+D:\Programming\HTML\mal-connector-extension\icons\icon128.png
+D:\Programming\HTML\mal-connector-extension\icons\icon16.png
+D:\Programming\HTML\mal-connector-extension\icons\icon48.png

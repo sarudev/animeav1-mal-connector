@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Conecta las acciones de AnimeAv1 con My Anime List.",
   "permissions": [
+    "scripting",
     "storage",
     "activeTab"
   ],
