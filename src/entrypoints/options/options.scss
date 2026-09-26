@@ -1,0 +1,96 @@
+@use '../../styles/theme' as *;
+
+body {
+  font-family: var(--font-body);
+  max-width: 480px;
+  margin: 32px auto;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 0;
+}
+
+main {
+  padding: 20px 26px 24px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  position: relative;
+
+  &::before {
+    @include perforated-edge(4px 4px 0 0);
+  }
+}
+
+h1 {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: 0.1px;
+  margin: 10px 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+  color: var(--ink);
+}
+
+p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+
+  a {
+    color: var(--indigo);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+
+    &:hover {
+      color: var(--ink);
+    }
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line);
+}
+
+label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+input {
+  @include input-base;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 7px 9px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+button {
+  @include button-base;
+  font-size: 13px;
+  padding: 8px 14px;
+}
+
+#test-btn {
+  @include button-ghost;
+}
+
+.status {
+  @include status-box;
+  margin-top: 16px;
+  padding: 9px 12px;
+  font-size: 13px;
+}
