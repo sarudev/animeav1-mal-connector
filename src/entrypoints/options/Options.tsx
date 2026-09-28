@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { browser } from 'wxt/browser'
 import type { MalAuth } from '@/utils/storage'
+import '@/styles/tailwind.css'
 import './options.scss'
 
 type StatusState = {
@@ -56,7 +57,7 @@ export default function App() {
       <h1>Credenciales de MyAnimeList</h1>
       <p>
         Necesitas una app registrada en{' '}
-        <a href='https://myanimelist.net/apiconfig' target='_blank' rel='noopener noreferrer'>
+        <a href='https://myanimelist.net/apiconfig' className='bg-red-500' target='_blank' rel='noopener noreferrer'>
           myanimelist.net/apiconfig
         </a>{' '}
         y un refresh token obtenido mediante el flujo OAuth2 de MAL.

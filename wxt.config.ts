@@ -1,5 +1,6 @@
 import { defineConfig } from 'wxt'
 import { resolve } from 'node:path'
+import tailwindcss from '@tailwindcss/vite'
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -16,5 +17,8 @@ export default defineConfig({
   manifest: {
     permissions: ['storage', 'scripting', 'tabs'],
     host_permissions: ['https://myanimelist.net/*', 'https://api.myanimelist.net/*', 'https://animeav1.com/*']
-  }
+  },
+  vite: () => ({
+    plugins: [tailwindcss()]
+  })
 })

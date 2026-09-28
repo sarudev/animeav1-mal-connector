@@ -1,0 +1,36 @@
+@use '../../styles/theme' as *;
+
+.tooltip-trigger {
+  display: inline-block;
+}
+
+.tooltip-content {
+  pointer-events: none;
+  z-index: 9999;
+  width: max-content;
+  max-width: var(--container-xs);
+  border-radius: 0.25rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-inline: calc(var(--spacing) * 1.5);
+  padding-block: calc(var(--spacing) * 0.5);
+  font-size: var(--text-xs);
+  line-height: var(--tw-leading, var(--text-xs--line-height));
+  --tw-font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-medium);
+  background-color: color-mix(in oklab, rgb(var(--lead)) 90%, transparent);
+  color: var(--fore);
+  opacity: 0;
+  animation: tooltip-fade-in 0.15s ease-out forwards;
+  font-family: var(--font-body);
+}
+
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

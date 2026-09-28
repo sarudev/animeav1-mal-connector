@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { browser } from 'wxt/browser'
+import '@/styles/tailwind.css'
 import './popup.scss'
 
 interface AnimeResult {
@@ -215,7 +216,7 @@ export default function Popup() {
   const confirmDisabled = !manualId.trim() && !selectedResult
 
   return (
-    <main>
+    <main className='bg-red-500'>
       <h1>AnimeAv1 ↔ MyAnimeList</h1>
 
       <section id='connection-status' className={connection.status}>

@@ -1,0 +1,52 @@
+@import url('https://api.fontshare.com/v2/css?f=satoshi@300,301,400,401,500,501,700,701,900,901,1,2&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-body: rgb(var(--body, 19 19 23));
+  --color-body-o: color-mix(in oklab, --color-body 60%, transparent);
+  --color-text: rgb(var(--text, 135 138 168));
+  --color-text-o: color-mix(in oklab, --color-text 60%, transparent);
+  --color-lead: rgb(var(--lead, 255 255 255));
+  --color-lead-o: color-mix(in oklab, --color-lead 60%, transparent);
+  --color-subs: rgb(var(--subs, 167 172 209));
+  --color-subs-o: color-mix(in oklab, --color-subs 60%, transparent);
+  --color-fore: rgb(var(--fore, 0 0 0));
+  --color-fore-o: color-mix(in oklab, --color-fore 60%, transparent);
+  --color-main: rgb(var(--main, 60 236 214));
+  --color-main-o: color-mix(in oklab, --color-main 60%, transparent);
+  --color-tone: rgb(var(--tone, 192 132 252));
+  --color-tone-o: color-mix(in oklab, --color-tone 60%, transparent);
+  --color-mark: rgb(var(--mark, 251 146 60));
+  --color-mark-o: color-mix(in oklab, --color-mark 60%, transparent);
+  --color-mute: rgb(var(--mute, 26 27 37));
+  --color-mute-o: color-mix(in oklab, --color-mute 60%, transparent);
+  --color-soft: rgb(var(--soft, 33 36 51));
+  --color-soft-o: color-mix(in oklab, --color-soft 60%, transparent);
+  --color-line: rgb(var(--line, 48 52 74));
+  --color-line-o: color-mix(in oklab, --color-line 60%, transparent);
+  --color-edge: rgb(var(--edge, 64 69 98));
+  --color-edge-o: color-mix(in oklab, --color-edge 60%, transparent);
+  --color-fire: rgb(var(--fire, 248 113 113));
+  --color-fire-o: color-mix(in oklab, --color-fire 60%, transparent);
+  --color-warn: rgb(var(--warn, 216 195 111));
+  --color-warn-o: color-mix(in oklab, --color-warn 60%, transparent);
+  --color-wins: rgb(var(--wins, 74 222 128));
+  --color-wins-o: color-mix(in oklab, --color-wins 60%, transparent);
+  --color-info: rgb(var(--info, 96 165 250));
+  --color-info-o: color-mix(in oklab, --color-info 60%, transparent);
+  --color-back: rgb(var(--back, 26 27 37));
+  --color-back-o: color-mix(in oklab, --color-back 60%, transparent);
+  --color-tint: #262b36;
+  --color-tint-o: color-mix(in oklab, --color-tint 60%, transparent);
+  --color-ink: #e7e6e2;
+  --color-ink-o: color-mix(in oklab, --color-ink 60%, transparent);
+}
+
+* {
+  font-family: 'Satoshi', sans-serif;
+}
+
+button:not(:disabled),
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}

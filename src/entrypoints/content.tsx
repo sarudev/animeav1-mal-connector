@@ -1,11 +1,8 @@
-// Content script para https://animeav1.com/media/*
-// Detecta el anime/episodio actual, observa el botón de "visto" para avisar
-// al background cuando cambia de estado, y monta la tarjeta de vinculación
-// (React, en un Shadow Root) sobre la página.
 import { createRoot, type Root } from 'react-dom/client'
 import { browser } from 'wxt/browser'
-import LinkedCard from '@/entrypoints/content-ui/LinkedCard'
-import '../entrypoints/content-ui/linked-card.scss'
+import LinkedCard from '@/components/linked-card/LinkedCard'
+import { watchTheme } from '@/utils/theme-sync'
+import '@/styles/tailwind.css'
 
 export interface AnimeResult {
   id: number
@@ -170,6 +167,7 @@ export default defineContentScript({
     let uiMounted = false
     let resolvedSlug: string | null = null
     let resolving = false
+    let stopWatchingTheme: (() => void) | null = null
 
     async function mountUi(slug: string, link: AnimeLink | null, name: string | null, results: AnimeResult[] | null) {
       if (!uiMounted) {
@@ -178,11 +176,14 @@ export default defineContentScript({
           position: 'inline',
           anchor: 'body > div > div > div:nth-child(2)',
           append: 'first',
-          onMount: container => {
+          onMount: (container, _, shadowHost) => {
+            stopWatchingTheme = watchTheme(shadowHost)
             reactRoot = createRoot(container)
-            reactRoot.render(<LinkedCard slug={slug} initialName={name} initialLink={link} initialResults={results} />)
+            reactRoot.render(<LinkedCard container={container} slug={slug} initialName={name} initialLink={link} initialResults={results} />)
           },
           onRemove: () => {
+            stopWatchingTheme?.()
+            stopWatchingTheme = null
             reactRoot?.unmount()
             reactRoot = null
           }
@@ -190,7 +191,7 @@ export default defineContentScript({
         ui.mount()
         uiMounted = true
       } else {
-        reactRoot?.render(<LinkedCard slug={slug} initialName={name} initialLink={link} initialResults={results} />)
+        reactRoot?.render(<LinkedCard container={document.body} slug={slug} initialName={name} initialLink={link} initialResults={results} />)
       }
     }
 

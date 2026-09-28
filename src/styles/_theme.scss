@@ -1,40 +1,10 @@
-:root {
-  --paper: #111113;
-  --paper-alt: #1c1c1f;
-  --paper-highlight: #26262a;
-  --ink: #e7e6e2;
-  --muted: #8f8d89;
-  --indigo: #93a7c5;
-  --indigo-deep: #3f4f6b;
-  --indigo-deep-hover: #51648a;
-  --oxblood: #d98f85;
-  --oxblood-bg: #2c201f;
-  --oxblood-border: #4a3330;
-  --ok-bg: #1c231c;
-  --ok-ink: #a8c79b;
-  --ok-border: #35402f;
-  --font-head: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,301,400,401,500,501,700,701,900,901,1,2&display=swap');
 
-  --body: rgb(19 19 23);
-  --text: rgb(135 138 168);
-  --lead: rgb(255 255 255);
-  --subs: rgb(167 172 209);
-  --fore: rgb(0 0 0);
-  --main: rgb(60 236 214);
-  --tone: rgb(192 132 252);
-  --mark: rgb(251 146 60);
-  --mute: rgb(26 27 37);
-  --soft: rgb(33 36 51);
-  --line: rgb(48 52 74);
-  --edge: rgb(64 69 98);
-  --fire: rgb(248 113 113);
-  --warn: rgb(216 195 111);
-  --wins: rgb(74 222 128);
-  --info: rgb(96 165 250);
-  --back: rgb(26 27 37);
+* {
+  box-sizing: border-box;
+}
 
+@mixin theme-fallback {
   --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --color-red-400: oklch(70.4% 0.191 22.216);
@@ -105,72 +75,6 @@
   --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   --default-font-family: var(--font-sans);
   --default-mono-font-family: var(--font-mono);
-
-  --tw-scale-x: 1;
-  --tw-scale-y: 1;
-  --tw-scale-z: 1;
-  --tw-rotate-x: initial;
-  --tw-rotate-y: initial;
-  --tw-rotate-z: initial;
-  --tw-skew-x: initial;
-  --tw-skew-y: initial;
-  --tw-space-y-reverse: 0;
-  --tw-space-x-reverse: 0;
-  --tw-border-style: solid;
-  --tw-gradient-position: initial;
-  --tw-gradient-from: #0000;
-  --tw-gradient-via: #0000;
-  --tw-gradient-to: #0000;
-  --tw-gradient-stops: initial;
-  --tw-gradient-via-stops: initial;
-  --tw-gradient-from-position: 0%;
-  --tw-gradient-via-position: 50%;
-  --tw-gradient-to-position: 100%;
-  --tw-font-weight: initial;
-  --tw-tracking: initial;
-  --tw-ordinal: initial;
-  --tw-slashed-zero: initial;
-  --tw-numeric-figure: initial;
-  --tw-numeric-spacing: initial;
-  --tw-numeric-fraction: initial;
-  --tw-shadow: 0 0 #0000;
-  --tw-shadow-color: initial;
-  --tw-shadow-alpha: 100%;
-  --tw-inset-shadow: 0 0 #0000;
-  --tw-inset-shadow-color: initial;
-  --tw-inset-shadow-alpha: 100%;
-  --tw-ring-color: initial;
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-inset-ring-color: initial;
-  --tw-inset-ring-shadow: 0 0 #0000;
-  --tw-ring-inset: initial;
-  --tw-ring-offset-width: 0px;
-  --tw-ring-offset-color: #fff;
-  --tw-ring-offset-shadow: 0 0 #0000;
-  --tw-blur: initial;
-  --tw-brightness: initial;
-  --tw-contrast: initial;
-  --tw-grayscale: initial;
-  --tw-hue-rotate: initial;
-  --tw-invert: initial;
-  --tw-opacity: initial;
-  --tw-saturate: initial;
-  --tw-sepia: initial;
-  --tw-drop-shadow: initial;
-  --tw-drop-shadow-color: initial;
-  --tw-drop-shadow-alpha: 100%;
-  --tw-drop-shadow-size: initial;
-  --tw-ease: initial;
-  --tw-content: '';
-  --tw-leading: initial;
-  --tw-duration: initial;
-  --tw-translate-x: 0;
-  --tw-translate-y: 0;
-  --tw-translate-z: 0;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 @mixin perforated-edge($radius: 0) {
@@ -197,20 +101,20 @@
   font-weight: var(--font-weight-medium);
   line-height: var(--tw-leading, var(--text-sm--line-height));
   border-radius: var(--radius-lg);
-  border: 1px var(--tw-border-style) var(--line);
-  background: color-mix(in oklab, var(--mute) 60%, transparent);
-  color: var(--subs);
+  border: 1px var(--tw-border-style) rgb(var(--line));
+  background: color-mix(in oklab, rgb(var(--mute)) 60%, transparent);
+  color: rgb(var(--subs));
   padding-inline: calc(var(--spacing) * 0);
   outline: none;
   cursor: pointer;
 
   &:hover {
-    background: var(--edge);
-    color: var(--lead);
+    background: rgb(var(--edge));
+    color: rgb(var(--lead));
   }
 
   &:focus-visible {
-    outline: 2px solid var(--indigo);
+    outline: 2px solid rgb(var(--mute));
     outline-offset: 2px;
   }
 
@@ -222,55 +126,27 @@
 }
 
 @mixin input-base {
-  border: 1px solid color-mix(in oklab, var(--line) 40%, transparent);
-  background: var(--soft);
-  font-size: var(--text-base);
+  border: 1px solid color-mix(in oklab, rgb(var(--line)) 40%, transparent);
+  background: rgb(var(--soft));
   line-height: var(--tw-leading, var(--text-base--line-height));
-  color: var(--text);
+  color: rgb(var(--text));
   display: block;
   width: 100%;
   border-radius: var(--radius-lg);
   padding-inline: calc(var(--spacing) * 4);
-  padding-block: calc(var(--spacing) * 2);
   min-height: calc(var(--spacing) * 8);
+  flex-grow: 1;
+  padding-block: 0;
+  font-size: var(--text-sm);
 
   &:focus-visible {
-    border-color: var(--edge);
-    background-color: var(--mute);
+    border-color: rgb(var(--edge));
+    background-color: rgb(var(--mute));
     outline-style: none;
   }
 
   &::placeholder {
     font-size: var(--text-base);
-    color: var(--muted);
-  }
-}
-
-@mixin button-ghost {
-  background: transparent;
-  color: var(--indigo);
-
-  &:hover {
-    background: var(--paper-alt);
-    color: var(--indigo);
-  }
-}
-
-@mixin status-box {
-  border-radius: 3px;
-  background: var(--paper-alt);
-  color: var(--muted);
-  border: 1px solid var(--line);
-
-  &.ok {
-    background: var(--ok-bg);
-    color: var(--ok-ink);
-    border-color: var(--ok-border);
-  }
-
-  &.error {
-    background: var(--oxblood-bg);
-    color: var(--oxblood);
-    border-color: var(--oxblood-border);
+    color: rgb(var(--mute));
   }
 }

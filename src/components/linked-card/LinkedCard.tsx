@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { browser } from 'wxt/browser'
 import type { AnimeLink } from '@/utils/storage'
+import Tooltip from '../tooltip/Tooltip'
+import './linked-card.scss'
+import '@/styles/tailwind.css'
+import Button from '../buttons/Button'
+import Card from '../card/Card'
+import { Check, ChevronLeft, Settings } from 'lucide-react'
 
 interface AnimeResult {
   id: number
@@ -14,9 +20,10 @@ interface Props {
   initialName: string | null
   initialLink: AnimeLink | null
   initialResults?: AnimeResult[] | null
+  container: HTMLElement
 }
 
-export default function LinkedCard({ slug, initialName, initialLink, initialResults = null }: Props) {
+export default function LinkedCard({ slug, initialName, initialLink, initialResults = null, container }: Props) {
   const [link, setLink] = useState<AnimeLink | null>(initialLink)
   const [view, setView] = useState<'linked' | 'link-form'>(initialLink ? 'linked' : 'link-form')
   const [searchInput, setSearchInput] = useState('')
@@ -130,40 +137,45 @@ export default function LinkedCard({ slug, initialName, initialLink, initialResu
   const confirmNameDisabled = searchInput.trim().length < 3 || confirmLoading || searchLoading
 
   return (
-    <div id='mal-linked-view'>
+    <div className='relative rounded mb-2 flex flex-col gap-2'>
       {view === 'linked' && link && (
-        <div className='card anime-card'>
-          <div className='anime-data'>
-            {link.pictureUrl && <img className='anime-thumb' src={link.pictureUrl} alt='' />}
-            <div className='anime-info'>
-              <div>
-                <p>
-                  ✅ Vinculado (ID <span>{link.malId}</span>)
+        <Card>
+          <div className='flex gap-2'>
+            {link.pictureUrl && <img className='h-26 rounded-lg' src={link.pictureUrl} alt='' />}
+            <div className='flex flex-col justify-between'>
+              <div className='flex flex-col gap-1'>
+                <p className='text-wins text-xs font-bold flex gap-1'>
+                  <Check size={14} /> Vinculado <span className='bg-tint rounded border-line px-1.25 py-px text-subs font-bold'>ID {link.malId}</span>
                 </p>
-                <a href={`https://myanimelist.net/anime/${link.malId}`} target='_blank' rel='noopener noreferrer'>
-                  {link.title || '(sin título)'}
+                <a
+                  href={`https://myanimelist.net/anime/${link.malId}`}
+                  className='text-main hover:underline'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  {link.title}
                 </a>
               </div>
-              <button
-                type='button'
+              <Button
+                className='w-min self-end text-sm gap-1'
+                icon={<Settings size={20} />}
+                iconPosition='right'
+                label='Opciones'
+                type='ghost'
                 onClick={() => {
                   autoSearchedFor.current = null
                   setView('link-form')
                 }}
-              >
-                Cambiar vínculo
-              </button>
+              />
             </div>
           </div>
-        </div>
+        </Card>
       )}
 
       {view === 'link-form' && (
         <div className='search'>
           <div className='card'>
-            <p className='back' onClick={() => setView('linked')}>
-              {'<'} Volver
-            </p>
+            <Button label='Volver' icon={<ChevronLeft size={18} />} onClick={() => setView('linked')} className='self-start text-sm' />
 
             <div className='form'>
               <input name='name' value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder='Buscar por nombre...' />
@@ -187,14 +199,22 @@ export default function LinkedCard({ slug, initialName, initialLink, initialResu
                         }}
                       />
                       <img className='result-thumb' alt='' src={anime.main_picture?.medium || ''} />
-                      <p className='result-info'>
-                        <a title={anime.title} className='result-link' href={`https://myanimelist.net/anime/${anime.id}`} target='_blank' rel='noopener noreferrer' onClick={e => e.stopPropagation()}>
-                          {anime.title}
-                        </a>
+                      <span className='result-info'>
+                        <Tooltip label={anime.title} container={container}>
+                          <a
+                            className='result-link'
+                            href={`https://myanimelist.net/anime/${anime.id}`}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            onClick={e => e.stopPropagation()}
+                          >
+                            {anime.title}
+                          </a>
+                        </Tooltip>
                         <p className='result-meta'>
                           {anime.num_episodes ? `${anime.num_episodes} eps` : 'Eps ?'} · ID {anime.id}
                         </p>
-                      </p>
+                      </span>
                     </label>
                   </li>
                 ))}
