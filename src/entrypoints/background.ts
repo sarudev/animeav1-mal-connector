@@ -1,15 +1,39 @@
 // Service worker: enruta los mensajes de content scripts / popup / options
 // y aplica la lógica de sincronización con MyAnimeList.
+import type { MalListStatus } from '@/utils/mal'
 import { browser } from 'wxt/browser'
-
-export interface TabContext {
-  slug: string
-  name: string | null
-}
-
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
-}
+import type {
+  AUTO_LINK_ANIME,
+  AUTO_LINK_ANIME_RESPONSE,
+  GET_DETAILS,
+  GET_DETAILS_RESPONSE,
+  GET_LINK,
+  GET_LINK_RESPONSE,
+  LINK_ANIME,
+  LINK_ANIME_RESPONSE,
+  UNLINK_ANIME,
+  UNLINK_ANIME_RESPONSE,
+  SEARCH_ANIME,
+  SEARCH_ANIME_RESPONSE,
+  GET_TAB_CONTEXT,
+  GET_TAB_CONTEXT_RESPONSE,
+  UPDATE_SCORE,
+  UPDATE_SCORE_RESPONSE,
+  TOGGLE_WATCHED,
+  TOGGLE_WATCHED_RESPONSE,
+  TEST_MAL_CONNECTION,
+  TEST_MAL_CONNECTION_RESPONSE,
+  SAVE_MAL_AUTH,
+  SAVE_MAL_AUTH_RESPONSE,
+  GET_MAL_AUTH,
+  GET_MAL_AUTH_RESPONSE,
+  GET_LINKED_ANIME,
+  GET_LINKED_ANIME_RESPONSE,
+  PAGE_CONTEXT,
+  PAGE_CONTEXT_RESPONSE,
+  Message,
+  Response
+} from '@/utils/types'
 
 /**
  * Calcula los campos a enviar a MAL según el estado actual de la lista del
@@ -27,8 +51,7 @@ function todayISO(): string {
  *   - En caso contrario, se decrementa num_watched_episodes a (episodio - 1)
  *     y se asegura que el estado sea "watching" (con start_date si falta).
  */
-function computeListUpdate(currentStatus: MalListStatus | undefined, totalEpisodes: number | undefined, episode: number, watched: boolean): Record<string, string | number> | null {
-  const cur = currentStatus || {}
+function computeListUpdate(cur: MalListStatus, totalEpisodes: number, episode: number, watched: boolean): Record<string, string | number> | null {
   const update: Record<string, string | number> = {}
 
   if (watched) {
@@ -60,24 +83,36 @@ function computeListUpdate(currentStatus: MalListStatus | undefined, totalEpisod
   return update
 }
 
-async function handleToggleWatched({ slug, episode, watched }: { slug: string; episode: number | null; watched: boolean }) {
-  const link = await getLink(slug)
-  if (!link) {
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+async function handleToggleWatched({
+  slug,
+  episode,
+  watched
+}: {
+  slug: string
+  episode: number | null
+  watched: boolean
+}): Promise<TOGGLE_WATCHED_RESPONSE> {
+  const id = await getId(slug)
+  if (!id) {
     return { ok: false, error: 'not_linked' }
   }
   if (episode == null) {
     return { ok: false, error: 'no_episode_detected' }
   }
 
-  const details = await getAnimeDetails(link.malId)
-  const update = computeListUpdate(details.my_list_status, details.num_episodes, episode, watched)
+  const details = await getAnimeDetails(id)
+  const update = computeListUpdate(details.my_list_status!, details.num_episodes, episode, watched)
 
   if (!update) {
-    return { ok: true, skipped: true }
+    return { ok: true, data: { skipped: true } }
   }
 
-  const result = await updateListStatus(link.malId, update)
-  return { ok: true, status: result }
+  const result = await updateListStatus(id, update)
+  return { ok: true, data: { status: result } }
 }
 
 async function setBadgeForTab(tabId: number | undefined | null, linked: boolean) {
@@ -90,151 +125,186 @@ async function setBadgeForTab(tabId: number | undefined | null, linked: boolean)
   })
 }
 
-async function autoLinkAnime(slug: string, name: string, tabId: number) {
-  const existingLink = await getLink(slug)
-  if (existingLink) {
+async function autoLinkAnime(slug: string, name: string, tabId: number): Promise<AUTO_LINK_ANIME_RESPONSE> {
+  const id = await getId(slug)
+  if (id != null) {
     await setBadgeForTab(tabId, true)
-    return { ok: true, autoLinked: false, link: existingLink, results: null }
+    return { ok: true, data: { autoLinked: false, reason: 'existing', id, results: null } }
   }
 
   const results = await searchAnime(name)
   const anime = results.find(a => a.title.toLowerCase() === name.toLowerCase()) ?? results[0]
   if (!anime) {
     await setBadgeForTab(tabId, false)
-    return { ok: true, autoLinked: false, reason: 'no_results', results }
+    return { ok: true, data: { autoLinked: false, reason: 'no_results', results, id: null } }
   }
 
-  const link: AnimeLink = {
-    malId: anime.id,
-    title: anime.title,
-    pictureUrl: anime.main_picture?.medium || null
-  }
-  await setLink(slug, link)
+  await setId(slug, anime.id)
   await setBadgeForTab(tabId, true)
-  return { ok: true, autoLinked: true, link, results }
+  return { ok: true, data: { autoLinked: true, id: anime.id, results: null } }
+}
+
+export async function sendMessage(message: PAGE_CONTEXT): Promise<PAGE_CONTEXT_RESPONSE>
+export async function sendMessage(message: AUTO_LINK_ANIME): Promise<AUTO_LINK_ANIME_RESPONSE>
+export async function sendMessage(message: GET_TAB_CONTEXT): Promise<GET_TAB_CONTEXT_RESPONSE>
+export async function sendMessage(message: GET_LINK): Promise<GET_LINK_RESPONSE>
+export async function sendMessage(message: LINK_ANIME): Promise<LINK_ANIME_RESPONSE>
+export async function sendMessage(message: UNLINK_ANIME): Promise<UNLINK_ANIME_RESPONSE>
+export async function sendMessage(message: SEARCH_ANIME): Promise<SEARCH_ANIME_RESPONSE>
+export async function sendMessage(message: GET_DETAILS): Promise<GET_DETAILS_RESPONSE>
+export async function sendMessage(message: UPDATE_SCORE): Promise<UPDATE_SCORE_RESPONSE>
+export async function sendMessage(message: TOGGLE_WATCHED): Promise<TOGGLE_WATCHED_RESPONSE>
+export async function sendMessage(message: TEST_MAL_CONNECTION): Promise<TEST_MAL_CONNECTION_RESPONSE>
+export async function sendMessage(message: SAVE_MAL_AUTH): Promise<SAVE_MAL_AUTH_RESPONSE>
+export async function sendMessage(message: GET_MAL_AUTH): Promise<GET_MAL_AUTH_RESPONSE>
+export async function sendMessage(message: GET_LINKED_ANIME): Promise<GET_LINKED_ANIME_RESPONSE>
+export async function sendMessage(message: Message): Promise<Response<unknown>> {
+  return browser.runtime.sendMessage(message)
 }
 
 export default defineBackground(() => {
-  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  browser.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
     ;(async () => {
+      const { type } = message
       try {
-        switch (message.type) {
+        switch (type) {
           case 'PAGE_CONTEXT': {
+            const { slug, name } = message
             const tabId = sender.tab?.id
             if (tabId == null) {
-              sendResponse({ ok: false })
+              sendResponse({ ok: false, error: 'missing_context' } satisfies PAGE_CONTEXT_RESPONSE)
               return
             }
-            await setTabContext(tabId, { slug: message.slug, name: message.name })
-            const link = await getLink(message.slug)
+            await setTabContext(tabId, { slug, name })
+            const link = await getId(slug)
             await setBadgeForTab(tabId, Boolean(link))
-            sendResponse({ ok: true })
+            sendResponse({ ok: true, data: undefined } satisfies PAGE_CONTEXT_RESPONSE)
             break
           }
 
           case 'AUTO_LINK_ANIME': {
+            const { slug, name } = message
             const tabId = sender.tab?.id
-            if (tabId == null || !message.slug || !message.name) {
-              sendResponse({ ok: false, error: 'missing_context' })
+            if (tabId == null || !slug || !name) {
+              sendResponse({ ok: false, error: 'missing_context' } satisfies AUTO_LINK_ANIME_RESPONSE)
               return
             }
-            const result = await autoLinkAnime(message.slug, message.name, tabId)
-            sendResponse(result)
+            const result = await autoLinkAnime(slug, name, tabId)
+            sendResponse(result satisfies AUTO_LINK_ANIME_RESPONSE)
             break
           }
 
           case 'GET_TAB_CONTEXT': {
-            const context = await getTabContext(message.tabId)
-            const link = context ? await getLink(context.slug) : null
-            sendResponse({ ok: true, context, link })
+            const { tabId } = message
+            const context = await getTabContext(tabId)
+            const id = context ? await getId(context.slug) : null
+            sendResponse({ ok: true, data: { context, id } } satisfies GET_TAB_CONTEXT_RESPONSE)
             break
           }
 
           case 'GET_LINK': {
-            const link = await getLink(message.slug)
-            sendResponse({ ok: true, link })
+            const { slug } = message
+            const id = await getId(slug)
+            sendResponse({ ok: true, data: { id } } satisfies GET_LINK_RESPONSE)
             break
           }
 
           case 'LINK_ANIME': {
-            let title = message.title
-            let pictureUrl = message.pictureUrl || null
+            const { slug, malId, tabId: msgTabId } = message
+            let { title, pictureUrl } = message
             if (!title || !pictureUrl) {
               try {
-                const details = await getAnimeDetails(message.malId)
+                const details = await getAnimeDetails(malId)
                 title = title || details.title
                 pictureUrl = pictureUrl || details.main_picture?.medium || null
               } catch {
                 if (!title) {
-                  sendResponse({ ok: false, error: 'not_found' })
+                  sendResponse({ ok: false, error: 'not_found' } satisfies LINK_ANIME_RESPONSE)
                   return
                 }
               }
             }
 
-            await setLink(message.slug, { malId: message.malId, title, pictureUrl })
+            await setId(slug, malId)
 
-            const tabId = sender.tab?.id ?? message.tabId
+            const tabId = sender.tab?.id ?? msgTabId
             await setBadgeForTab(tabId, true)
 
-            sendResponse({ ok: true, title, pictureUrl })
+            sendResponse({ ok: true, data: { title, pictureUrl } } satisfies LINK_ANIME_RESPONSE)
             break
           }
 
           case 'UNLINK_ANIME': {
-            await removeLink(message.slug)
-            const tabId = sender.tab?.id ?? message.tabId
+            const { slug, tabId: msgTabId } = message
+            await removeId(slug)
+            const tabId = sender.tab?.id ?? msgTabId
             await setBadgeForTab(tabId, false)
-            sendResponse({ ok: true })
+            sendResponse({ ok: true, data: undefined } satisfies UNLINK_ANIME_RESPONSE)
             break
           }
 
           case 'SEARCH_ANIME': {
-            const results = await searchAnime(message.query)
-            sendResponse({ ok: true, results })
+            const { query } = message
+            const results = await searchAnime(query)
+            sendResponse({ ok: true, data: { results } } satisfies SEARCH_ANIME_RESPONSE)
+            break
+          }
+
+          case 'GET_DETAILS': {
+            const { slug } = message
+            const id = await getId(slug)
+            if (id == null) {
+              sendResponse({ ok: false, error: 'not_linked' } satisfies GET_DETAILS_RESPONSE)
+              return
+            }
+            const details = await getAnimeDetails(id)
+            sendResponse({ ok: true, data: { details } } satisfies GET_DETAILS_RESPONSE)
+            break
+          }
+
+          case 'UPDATE_SCORE': {
+            const { id, score } = message
+
+            const details = await getAnimeDetails(id)
+            if (details == null || details.my_list_status?.status === null || details.my_list_status?.status === 'plan_to_watch') {
+              sendResponse({ ok: false, error: 'not_available' } satisfies UPDATE_SCORE_RESPONSE)
+              return
+            }
+            const result = await updateListStatus(id, { score })
+            sendResponse({ ok: true, data: { status: result } } satisfies UPDATE_SCORE_RESPONSE)
             break
           }
 
           case 'TOGGLE_WATCHED': {
-            const result = await handleToggleWatched(message)
-            sendResponse(result)
+            const { slug, episode, watched } = message
+            const result = await handleToggleWatched({ slug, episode, watched })
+            sendResponse(result satisfies TOGGLE_WATCHED_RESPONSE)
             break
           }
 
           case 'TEST_MAL_CONNECTION': {
             const user = await getCurrentUser()
-            sendResponse({ ok: true, user })
+            sendResponse({ ok: true, data: { user } } satisfies TEST_MAL_CONNECTION_RESPONSE)
             break
           }
 
           case 'SAVE_MAL_AUTH': {
-            await setMalAuth({
-              clientId: message.clientId,
-              clientSecret: message.clientSecret,
-              refreshToken: message.refreshToken
-            })
-            sendResponse({ ok: true })
+            const { clientId, clientSecret, refreshToken } = message
+            await setMalAuth({ clientId, clientSecret, refreshToken })
+            sendResponse({ ok: true, data: undefined } satisfies SAVE_MAL_AUTH_RESPONSE)
             break
           }
 
           case 'GET_MAL_AUTH': {
             const auth = await getMalAuth()
-            sendResponse({
-              ok: true,
-              auth: auth
-                ? {
-                    clientId: auth.clientId,
-                    clientSecret: auth.clientSecret,
-                    refreshToken: auth.refreshToken
-                  }
-                : null
-            })
+            sendResponse({ ok: true, data: { auth } } satisfies GET_MAL_AUTH_RESPONSE)
             break
           }
 
           case 'GET_LINKED_ANIME': {
-            const link = await getLink(message.slug)
-            sendResponse({ ok: true, link })
+            const { slug } = message
+            const id = await getId(slug)
+            sendResponse({ ok: true, data: { id } } satisfies GET_LINKED_ANIME_RESPONSE)
             break
           }
 
@@ -246,7 +316,7 @@ export default defineBackground(() => {
       }
     })()
 
-    return true // Mantiene el canal abierto para la respuesta asíncrona.
+    return true
   })
 
   browser.tabs.onRemoved.addListener(tabId => {

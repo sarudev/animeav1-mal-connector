@@ -2,21 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { browser } from 'wxt/browser'
 import '@/styles/tailwind.css'
 import './popup.scss'
-
-interface AnimeResult {
-  id: number
-  title: string
-  num_episodes?: number
-  main_picture?: {
-    medium?: string
-  }
-}
-
-interface AnimeLink {
-  malId: number
-  title: string | null
-  pictureUrl: string | null
-}
+import type { AnimeResult } from '@/utils/mal'
+import { sendMessage } from '../background'
+import type { LINK_ANIME } from '@/utils/types'
 
 interface TabContext {
   slug: string
@@ -30,10 +18,6 @@ type ConnectionStatus = {
 
 function malAnimeUrl(id: number) {
   return `https://myanimelist.net/anime/${id}`
-}
-
-function sendMessage<T = any>(message: Record<string, unknown>): Promise<T> {
-  return browser.runtime.sendMessage(message) as Promise<T>
 }
 
 async function ensureContentScript(tabId: number) {
@@ -77,12 +61,10 @@ export default function Popup() {
   const initialized = useRef(false)
 
   async function checkConnection() {
-    const res = await sendMessage<{ ok: boolean; user?: { name: string }; error?: string }>({
-      type: 'TEST_MAL_CONNECTION'
-    })
+    const res = await sendMessage({ type: 'TEST_MAL_CONNECTION' })
     if (res && res.ok) {
       setConnection({
-        text: `✅ Conectado a MAL como ${res.user?.name ?? ''}`,
+        text: `✅ Conectado a MAL como ${res.data.user?.name ?? ''}`,
         status: 'status ok'
       })
     } else {
@@ -98,22 +80,19 @@ export default function Popup() {
     if (!tab?.id) return
     setTabId(tab.id)
 
-    const res = await sendMessage<{ ok: boolean; context?: TabContext; link?: AnimeLink | null }>({
-      type: 'GET_TAB_CONTEXT',
-      tabId: tab.id
-    })
+    const res = await sendMessage({ type: 'GET_TAB_CONTEXT', tabId: tab.id })
 
-    if (!res?.ok || !res.context) {
+    if (!res?.ok || !res.data.context) {
       setHasContext(false)
       return
     }
 
     setHasContext(true)
-    setSlug(res.context.slug)
-    setName(res.context.name)
-    setLink(res.link ?? null)
-    setSearchInput(res.context.name || '')
-    setView(res.link ? 'linked' : 'link-form')
+    setSlug(res.data.context.slug)
+    setName(res.data.context.name)
+    setLink(res.data.id ?? null)
+    setSearchInput(res.data.context.name || '')
+    setView(res.data.id ? 'linked' : 'link-form')
   }
 
   useEffect(() => {
@@ -142,15 +121,12 @@ export default function Popup() {
     setLinkError('')
     setSearchLoading(true)
     try {
-      const res = await sendMessage<{ ok: boolean; results: AnimeResult[]; error?: string }>({
-        type: 'SEARCH_ANIME',
-        query
-      })
+      const res = await sendMessage({ type: 'SEARCH_ANIME', query })
       if (!res?.ok) {
         setLinkError(res?.error || 'Error al buscar en MAL')
         return
       }
-      setSearchResults(res.results)
+      setSearchResults(res.data.results)
       setSelectedResult(null)
     } finally {
       setSearchLoading(false)
@@ -184,13 +160,13 @@ export default function Popup() {
 
     setConfirmLoading(true)
     try {
-      const res = await sendMessage<{ ok: boolean; title?: string; pictureUrl?: string; error?: string }>({
+      const res = await sendMessage({
         type: 'LINK_ANIME',
-        slug,
         malId,
         title,
         pictureUrl,
-        tabId
+        tabId: tabId!,
+        slug: slug!
       })
       if (!res?.ok) {
         setLinkError(res?.error || 'No se pudo vincular.')
@@ -199,8 +175,7 @@ export default function Popup() {
 
       setLink({
         malId,
-        title: res.title ?? title,
-        pictureUrl: res.pictureUrl ?? pictureUrl
+        title: res.data.title ?? title
       })
       setView('linked')
     } finally {
@@ -244,7 +219,7 @@ export default function Popup() {
       {hasContext && view === 'linked' && link && (
         <section id='linked-view'>
           <div className='anime-card'>
-            {link.pictureUrl && <img id='linked-image' className='anime-thumb' alt='' src={link.pictureUrl} />}
+            {/* <img id='linked-image' className='anime-thumb' alt='' src={link.pictureUrl} /> */}
             <p>
               ✅ Vinculado a{' '}
               <a id='linked-title' href={malAnimeUrl(link.malId)} target='_blank' rel='noopener noreferrer'>
@@ -274,9 +249,21 @@ export default function Popup() {
             {searchResults.map(anime => (
               <li key={anime.id}>
                 <label>
-                  <input type='radio' name='search-result' value={anime.id} checked={selectedResult?.id === anime.id} onChange={() => handleSelectResult(anime)} />
+                  <input
+                    type='radio'
+                    name='search-result'
+                    value={anime.id}
+                    checked={selectedResult?.id === anime.id}
+                    onChange={() => handleSelectResult(anime)}
+                  />
                   <img className='result-thumb' alt='' src={anime.main_picture?.medium || ''} />
-                  <a className='result-link' href={malAnimeUrl(anime.id)} target='_blank' rel='noopener noreferrer' onClick={e => e.stopPropagation()}>
+                  <a
+                    className='result-link'
+                    href={malAnimeUrl(anime.id)}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    onClick={e => e.stopPropagation()}
+                  >
                     {anime.title} (ID {anime.id}, {anime.num_episodes ? `${anime.num_episodes} eps` : 'eps ?'})
                   </a>
                 </label>
@@ -286,7 +273,14 @@ export default function Popup() {
 
           <div className='manual-row'>
             <label htmlFor='manual-id-input'>ID de MAL (manual)</label>
-            <input id='manual-id-input' type='number' min={1} placeholder='Ej: 21' value={manualId} onChange={e => handleManualIdChange(e.target.value)} />
+            <input
+              id='manual-id-input'
+              type='number'
+              min={1}
+              placeholder='Ej: 21'
+              value={manualId}
+              onChange={e => handleManualIdChange(e.target.value)}
+            />
           </div>
 
           <button id='confirm-link-btn' type='button' disabled={confirmDisabled || confirmLoading} onClick={handleConfirmLink}>

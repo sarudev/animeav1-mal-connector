@@ -1,5 +1,4 @@
 // Cliente de la API de MyAnimeList (OAuth2 + endpoints de anime y lista de usuario).
-import type { AnimeResult } from '@/entrypoints/content'
 import { getMalAuth, setMalAuth, type MalAuth } from '@/utils/storage'
 
 const TOKEN_URL = 'https://myanimelist.net/v1/oauth2/token'
@@ -11,19 +10,23 @@ export interface MalUser {
 }
 
 export interface MalListStatus {
-  status?: 'watching' | 'completed' | 'on_hold' | 'dropped' | 'plan_to_watch'
-  num_watched_episodes?: number
+  status: 'watching' | 'completed' | 'on_hold' | 'dropped' | 'plan_to_watch'
+  num_episodes_watched: number
   start_date?: string
   finish_date?: string
+  score: number
 }
 
 export interface MalAnime {
   id: number
   title: string
-  main_picture?: { medium?: string; large?: string }
-  num_episodes?: number
+  main_picture: { medium: string; large: string }
+  num_episodes: number
   my_list_status?: MalListStatus
+  score: number
 }
+
+export type AnimeResult = Omit<MalAnime, 'my_list_status'>
 
 async function refreshAccessToken(auth: MalAuth): Promise<MalAuth> {
   const body = new URLSearchParams({
@@ -109,7 +112,8 @@ async function searchAnimeViaRedirect(query: string): Promise<AnimeResult | null
     id,
     title: details.title,
     num_episodes: details.num_episodes,
-    main_picture: details.main_picture
+    main_picture: details.main_picture,
+    score: details.score
   }
 }
 

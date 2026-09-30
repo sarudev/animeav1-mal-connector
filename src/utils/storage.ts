@@ -1,7 +1,7 @@
 // Almacenamiento local: credenciales de MAL y vínculos animeav1(slug) -> MAL(id).
 // Se usa browser.storage.local (no sync) para que las credenciales nunca salgan del dispositivo.
-import type { TabContext } from '@/entrypoints/background'
 import { browser } from 'wxt/browser'
+import type { TabContext } from './types'
 
 const AUTH_KEY = 'malAuth'
 const LINKS_KEY = 'animeLinks'
@@ -14,13 +14,7 @@ export interface MalAuth {
   accessTokenExpiry?: number
 }
 
-export interface AnimeLink {
-  malId: number
-  title: string | null
-  pictureUrl: string | null
-}
-
-type AnimeLinks = Record<string, AnimeLink>
+type AnimeLinks = Record<string, number>
 
 export async function getMalAuth(): Promise<MalAuth | null> {
   const data = await browser.storage.local.get(AUTH_KEY)
@@ -28,7 +22,6 @@ export async function getMalAuth(): Promise<MalAuth | null> {
 }
 
 export async function setMalAuth(auth: MalAuth): Promise<void> {
-  console.log('Setting MAL auth:', auth)
   await browser.storage.local.set({ [AUTH_KEY]: auth })
 }
 
@@ -37,18 +30,18 @@ export async function getAnimeLinks(): Promise<AnimeLinks> {
   return (data[LINKS_KEY] as AnimeLinks) || {}
 }
 
-export async function getLink(slug: string): Promise<AnimeLink | null> {
+export async function getId(slug: string): Promise<number | null> {
   const links = await getAnimeLinks()
   return links[slug] || null
 }
 
-export async function setLink(slug: string, link: AnimeLink): Promise<void> {
+export async function setId(slug: string, link: number): Promise<void> {
   const links = await getAnimeLinks()
   links[slug] = link
   await browser.storage.local.set({ [LINKS_KEY]: links })
 }
 
-export async function removeLink(slug: string): Promise<void> {
+export async function removeId(slug: string): Promise<void> {
   const links = await getAnimeLinks()
   delete links[slug]
   await browser.storage.local.set({ [LINKS_KEY]: links })

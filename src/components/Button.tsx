@@ -1,4 +1,4 @@
-import '../../styles/tailwind.css'
+import '../styles/tailwind.css'
 
 interface ButtonProps {
   onClick?: () => void
@@ -18,7 +18,7 @@ const variants: Record<ButtonType, string> = {
 }
 
 export default function Button({ onClick, className = '', label, icon, iconPosition = 'left', type = 'ghost' }: ButtonProps) {
-  const padding = label != null ? 'pl-2 pr-3 py-0' : ''
+  const padding = label != null ? 'px-3 py-0' : ''
   const aspectRatio = label == null && icon != null ? 'aspect-square' : ''
 
   return (

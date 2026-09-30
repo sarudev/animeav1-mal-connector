@@ -1,15 +1,13 @@
 import { createRoot, type Root } from 'react-dom/client'
 import { browser } from 'wxt/browser'
-import LinkedCard from '@/components/linked-card/LinkedCard'
+import AnimeCard from '@/components/linked-card/AnimeCard'
 import { watchTheme } from '@/utils/theme-sync'
+import type { MalAnime } from '@/utils/mal'
+import ToastHolder from '@/components/ToastHolder'
+import { pushToast } from '@/utils/toast-store'
+import { sendMessage } from './background'
 import '@/styles/tailwind.css'
-
-export interface AnimeResult {
-  id: number
-  title: string
-  num_episodes?: number
-  main_picture?: { medium?: string }
-}
+import { useAnimeStore } from '@/components/linked-card/state'
 
 export default defineContentScript({
   matches: ['https://animeav1.com/*'],
@@ -30,7 +28,6 @@ export default defineContentScript({
     let lastSentSlug: string | null = null
     let lastKnownWatched: boolean | null = null
     let observedButton: Element | null = null
-    let toastTimer: ReturnType<typeof setTimeout> | undefined
 
     function parseLocation() {
       const match = MEDIA_PATH_REGEX.exec(window.location.pathname)
@@ -66,7 +63,7 @@ export default defineContentScript({
       return null
     }
 
-    function sendMessageSafe(message: Record<string, unknown>) {
+    function sendMessageSafe(message: Message) {
       try {
         browser.runtime.sendMessage(message)
       } catch {
@@ -75,19 +72,14 @@ export default defineContentScript({
       }
     }
 
-    function showAutoLinkToast(title: string) {
-      let toast = document.getElementById('mal-auto-link-toast')
-      if (!toast) {
-        toast = document.createElement('div')
-        toast.id = 'mal-auto-link-toast'
-        toast.setAttribute('role', 'status')
-        toast.style.cssText = 'position:fixed;top:16px;right:16px;z-index:2147483647;max-width:360px;padding:14px 18px;border-radius:8px;background:#2e7d32;color:#fff;font:500 14px/1.4 system-ui,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.28)'
-        document.documentElement.appendChild(toast)
+    const toastUi = await createShadowRootUi(ctx, {
+      name: 'mal-toast-holder',
+      position: 'overlay',
+      onMount: container => {
+        createRoot(container).render(<ToastHolder />)
       }
-      toast.textContent = `Vinculado automáticamente con MAL: ${title}`
-      clearTimeout(toastTimer)
-      toastTimer = setTimeout(() => toast?.remove(), 30000)
-    }
+    })
+    toastUi.mount()
 
     function maybeSendNameUpdate() {
       if (!currentSlug) return
@@ -169,7 +161,7 @@ export default defineContentScript({
     let resolving = false
     let stopWatchingTheme: (() => void) | null = null
 
-    async function mountUi(slug: string, link: AnimeLink | null, name: string | null, results: AnimeResult[] | null) {
+    async function mountUi(slug: string, id: number | null, results: MalAnime[] | null, data: MalAnime) {
       if (!uiMounted) {
         const ui = await createShadowRootUi(ctx, {
           name: 'mal-linked-view',
@@ -177,9 +169,20 @@ export default defineContentScript({
           anchor: 'body > div > div > div:nth-child(2)',
           append: 'first',
           onMount: (container, _, shadowHost) => {
+            const { setSlug, setId, setTitle, setStatus, setScore, setWatchedEpisodes, setTotalEpisodes, setPicture } = useAnimeStore.getState()
+
+            setSlug(slug)
+            setId(id)
+            setTitle(data.title)
+            setStatus(data.my_list_status!.status)
+            setScore(data.my_list_status!.score)
+            setWatchedEpisodes(data.my_list_status!.num_episodes_watched)
+            setTotalEpisodes(data.num_episodes)
+            setPicture(data.main_picture.medium)
+
             stopWatchingTheme = watchTheme(shadowHost)
             reactRoot = createRoot(container)
-            reactRoot.render(<LinkedCard container={container} slug={slug} initialName={name} initialLink={link} initialResults={results} />)
+            reactRoot.render(<AnimeCard container={container} />)
           },
           onRemove: () => {
             stopWatchingTheme?.()
@@ -191,7 +194,7 @@ export default defineContentScript({
         ui.mount()
         uiMounted = true
       } else {
-        reactRoot?.render(<LinkedCard container={document.body} slug={slug} initialName={name} initialLink={link} initialResults={results} />)
+        console.error(`La UI ya está montada para ${slug}`)
       }
     }
 
@@ -207,26 +210,40 @@ export default defineContentScript({
       if (resolvedSlug === slug || resolving) return
       resolving = true
       try {
-        const existing = await browser.runtime.sendMessage({ type: 'GET_LINK', slug })
-        if (existing?.ok && existing.link) {
+        const existing = await sendMessage({ type: 'GET_LINK', slug })
+        if (!existing?.ok) {
+          pushToast(`No se pudo obtener el enlace existente para ${slug}`, 'error')
+          return
+        }
+        if (existing.data.id != null) {
           resolvedSlug = slug
-          await mountUi(slug, existing.link, getAnimeName(), null)
+          const res = await sendMessage({ type: 'GET_DETAILS', slug })
+          if (!res.ok) {
+            pushToast(`No se pudieron obtener los detalles de MAL para ${slug}`, 'error')
+            return
+          }
+          await mountUi(slug, existing.data.id, null, res.data.details)
           return
         }
 
         const name = getAnimeName()
-        if (!name) return // el header todavía no renderizó; se reintenta en la próxima mutación
+        if (!name) return
 
         resolvedSlug = slug
-        const result = await browser.runtime.sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
-        const link = result?.ok ? (result.link ?? null) : null
-        const results = result?.ok ? (result.results ?? null) : null
+        const result = await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
+        const link = result.ok ? (result.data.id ?? null) : null
+        const results = result.ok ? (result.data.results ?? null) : null
 
-        if (result?.ok && result.autoLinked && result.link) {
-          showAutoLinkToast(result.link.title)
+        if (result?.ok && result.data.autoLinked && result.data.id) {
+          pushToast(`Vinculado automáticamente con MAL`)
         }
 
-        await mountUi(slug, link, name, results)
+        const res = await sendMessage({ type: 'GET_DETAILS', slug })
+        if (!res.ok || !res.data.details) {
+          pushToast(`No se pudieron obtener los detalles de MAL para ${name}`, 'error')
+          return
+        }
+        await mountUi(slug, link, results, res.data.details)
       } finally {
         resolving = false
       }
