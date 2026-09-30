@@ -176,8 +176,8 @@ export default defineBackground(() => {
               return
             }
             await setTabContext(tabId, { slug, name })
-            const link = await getId(slug)
-            await setBadgeForTab(tabId, Boolean(link))
+            const id = await getId(slug)
+            await setBadgeForTab(tabId, id != null)
             sendResponse({ ok: true, data: undefined } satisfies PAGE_CONTEXT_RESPONSE)
             break
           }
@@ -251,12 +251,7 @@ export default defineBackground(() => {
           }
 
           case 'GET_DETAILS': {
-            const { slug } = message
-            const id = await getId(slug)
-            if (id == null) {
-              sendResponse({ ok: false, error: 'not_linked' } satisfies GET_DETAILS_RESPONSE)
-              return
-            }
+            const { id } = message
             const details = await getAnimeDetails(id)
             sendResponse({ ok: true, data: { details } } satisfies GET_DETAILS_RESPONSE)
             break

@@ -38,7 +38,7 @@ export default function Popup() {
   const [tabId, setTabId] = useState<number | null>(null)
   const [slug, setSlug] = useState<string | null>(null)
   const [name, setName] = useState<string | null>(null)
-  const [link, setLink] = useState<AnimeLink | null>(null)
+  const [id, setId] = useState<number | null>(null)
 
   const [connection, setConnection] = useState<ConnectionStatus>({
     text: 'Comprobando conexión con MAL…',
@@ -90,7 +90,7 @@ export default function Popup() {
     setHasContext(true)
     setSlug(res.data.context.slug)
     setName(res.data.context.name)
-    setLink(res.data.id ?? null)
+    setId(res.data.id ?? null)
     setSearchInput(res.data.context.name || '')
     setView(res.data.id ? 'linked' : 'link-form')
   }
@@ -173,10 +173,7 @@ export default function Popup() {
         return
       }
 
-      setLink({
-        malId,
-        title: res.data.title ?? title
-      })
+      setId(malId)
       setView('linked')
     } finally {
       setConfirmLoading(false)
@@ -216,16 +213,15 @@ export default function Popup() {
         )}
       </section>
 
-      {hasContext && view === 'linked' && link && (
+      {hasContext && view === 'linked' && id && (
         <section id='linked-view'>
           <div className='anime-card'>
-            {/* <img id='linked-image' className='anime-thumb' alt='' src={link.pictureUrl} /> */}
             <p>
               ✅ Vinculado a{' '}
-              <a id='linked-title' href={malAnimeUrl(link.malId)} target='_blank' rel='noopener noreferrer'>
-                {link.title || '(sin título)'}
+              <a id='linked-title' href={malAnimeUrl(id)} target='_blank' rel='noopener noreferrer'>
+                {name || '(sin título)'}
               </a>{' '}
-              (ID <span id='linked-id'>{link.malId}</span>)
+              (ID <span id='linked-id'>{id}</span>)
             </p>
           </div>
           <button id='change-link-btn' type='button' onClick={handleChangeLink}>

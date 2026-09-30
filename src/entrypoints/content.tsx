@@ -174,9 +174,9 @@ export default defineContentScript({
             setSlug(slug)
             setId(id)
             setTitle(data.title)
-            setStatus(data.my_list_status!.status)
-            setScore(data.my_list_status!.score)
-            setWatchedEpisodes(data.my_list_status!.num_episodes_watched)
+            setStatus(data.my_list_status?.status ?? null)
+            setScore(data.my_list_status?.score ?? 0)
+            setWatchedEpisodes(data.my_list_status?.num_episodes_watched ?? 0)
             setTotalEpisodes(data.num_episodes)
             setPicture(data.main_picture.medium)
 
@@ -217,7 +217,7 @@ export default defineContentScript({
         }
         if (existing.data.id != null) {
           resolvedSlug = slug
-          const res = await sendMessage({ type: 'GET_DETAILS', slug })
+          const res = await sendMessage({ type: 'GET_DETAILS', id: existing.data.id })
           if (!res.ok) {
             pushToast(`No se pudieron obtener los detalles de MAL para ${slug}`, 'error')
             return
@@ -231,19 +231,19 @@ export default defineContentScript({
 
         resolvedSlug = slug
         const result = await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
-        const link = result.ok ? (result.data.id ?? null) : null
+        const id = result.ok ? result.data.id : null
         const results = result.ok ? (result.data.results ?? null) : null
 
         if (result?.ok && result.data.autoLinked && result.data.id) {
           pushToast(`Vinculado automáticamente con MAL`)
         }
 
-        const res = await sendMessage({ type: 'GET_DETAILS', slug })
+        const res = await sendMessage({ type: 'GET_DETAILS', id: id! })
         if (!res.ok || !res.data.details) {
           pushToast(`No se pudieron obtener los detalles de MAL para ${name}`, 'error')
           return
         }
-        await mountUi(slug, link, results, res.data.details)
+        await mountUi(slug, id, results, res.data.details)
       } finally {
         resolving = false
       }

@@ -49,7 +49,7 @@ export interface SEARCH_ANIME {
 
 export interface GET_DETAILS {
   type: 'GET_DETAILS'
-  slug: string
+  id: number
 }
 
 export interface UPDATE_SCORE {
