@@ -1,11 +1,14 @@
 import { Clock, Pause, Play, X, Check, BadgeQuestionMark } from 'lucide-react'
+import { useAnimeStore } from './useAnimeStore'
+import Skeleton from '../skeleton/Skeleton'
 
-const STATUS_CONFIG: Record<NonNullable<MalListStatus['status']>, { icon: typeof Check; label: string; className: string }> = {
+const STATUS_CONFIG: Record<NonNullable<MalListStatus['status'] | 'null'>, { icon: typeof Check; label: string; className: string }> = {
   completed: { icon: Check, label: 'Completado', className: 'text-wins' },
   dropped: { icon: X, label: 'Abandonado', className: 'text-fire' },
   on_hold: { icon: Pause, label: 'En espera', className: 'text-warn' },
   plan_to_watch: { icon: Clock, label: 'Planeado', className: 'text-warn' },
-  watching: { icon: Play, label: 'Viendo', className: 'text-info' }
+  watching: { icon: Play, label: 'Viendo', className: 'text-info' },
+  null: { icon: BadgeQuestionMark, label: 'No listado', className: 'text-subs' }
 }
 
 interface StatusProps {
@@ -14,20 +17,16 @@ interface StatusProps {
 }
 
 export default function Status({ status, className }: StatusProps) {
-  if (status == null) {
-    return (
-      <span className='text-subs text-xs flex gap-1'>
-        <BadgeQuestionMark size={14} />
-        No listado
-      </span>
-    )
-  }
+  const { loading } = useAnimeStore()
 
-  const { icon: Icon, label, className: klassName } = STATUS_CONFIG[status]
+  const { icon: Icon, label, className: klassName } = STATUS_CONFIG[status ?? 'null']
   return (
-    <span className={`${className} ${klassName} text-xs flex gap-1`}>
-      <Icon size={14} />
-      {label}
+    <span className='w-max'>
+      {loading && <Skeleton />}
+      <span className={`${className} ${klassName} text-xs flex gap-1`} style={{ opacity: loading ? 0 : 1 }}>
+        <Icon size={14} />
+        {label}
+      </span>
     </span>
   )
 }
