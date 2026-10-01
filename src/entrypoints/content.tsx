@@ -2,15 +2,16 @@ import { createRoot, type Root } from 'react-dom/client'
 import { browser } from 'wxt/browser'
 import AnimeCard from '@/components/linked-card/AnimeCard'
 import { watchTheme } from '@/utils/theme-sync'
-import type { MalAnime } from '@/utils/mal'
 import ToastHolder from '@/components/ToastHolder'
 import { pushToast } from '@/utils/toast-store'
 import { sendMessage } from './background'
 import '@/styles/tailwind.css'
-import { useAnimeStore } from '@/components/linked-card/state'
+import { useAnimeStore } from '@/components/linked-card/useAnimeStore'
 
 export default defineContentScript({
   matches: ['https://animeav1.com/*'],
+  // Con autoMount() el DOM no tiene que estar listo. Si querés arrancar todavía
+  // antes, probá 'document_start' (verificá que nada asuma DOM ya renderizado).
   runAt: 'document_idle',
   cssInjectionMode: 'ui',
 
@@ -33,7 +34,7 @@ export default defineContentScript({
       const match = MEDIA_PATH_REGEX.exec(window.location.pathname)
       if (!match) return null
 
-      const slug = match[1]
+      const slug = match[1]!
       const episodeSegment = match[2]
       // La extensión solo actúa en un episodio, no en /media/{name}.
       if (!/^\d+$/.test(episodeSegment || '')) return null
@@ -72,14 +73,76 @@ export default defineContentScript({
       }
     }
 
-    const toastUi = await createShadowRootUi(ctx, {
-      name: 'mal-toast-holder',
-      position: 'overlay',
-      onMount: container => {
-        createRoot(container).render(<ToastHolder />)
-      }
-    })
+    // --- UIs (React, en Shadow Root) ----------------------------------------
+    // Se crean una sola vez y en paralelo, al inicio. El montaje de la tarjeta
+    // no depende de la red: autoMount() espera al anchor y monta apenas aparece.
+
+    let reactRoot: Root | null = null
+    let stopWatchingTheme: (() => void) | null = null
+
+    const [toastUi, cardUi] = await Promise.all([
+      createShadowRootUi(ctx, {
+        name: 'mal-toast-holder',
+        position: 'overlay',
+        onMount: container => {
+          createRoot(container).render(<ToastHolder />)
+        }
+      }),
+      createShadowRootUi(ctx, {
+        name: 'mal-linked-view',
+        position: 'inline',
+        anchor: 'body > div > div > div:nth-child(2)',
+        append: 'first',
+        onMount: (container, _, shadowHost) => {
+          stopWatchingTheme = watchTheme(shadowHost)
+          reactRoot = createRoot(container)
+          reactRoot.render(<AnimeCard container={container} />)
+        },
+        onRemove: () => {
+          stopWatchingTheme?.()
+          stopWatchingTheme = null
+          reactRoot?.unmount()
+          reactRoot = null
+        }
+      })
+    ])
     toastUi.mount()
+
+    let cardActive = false
+
+    function whenHydrated(): Promise<void> {
+      return new Promise(resolve => {
+        if (document.getElementById('svelte-announcer')) return resolve()
+        const done = () => {
+          obs.disconnect()
+          clearTimeout(timer)
+          resolve()
+        }
+        const obs = new MutationObserver(() => {
+          if (document.getElementById('svelte-announcer')) done()
+        })
+        obs.observe(document.documentElement, { childList: true, subtree: true })
+        const timer = setTimeout(done, 10000)
+      })
+    }
+
+    const hydrated = whenHydrated()
+
+    async function mountCard() {
+      if (cardActive) return
+      cardActive = true
+      await hydrated
+      if (!cardActive) return
+      cardUi.autoMount()
+    }
+
+    function unmountCard() {
+      if (!cardActive) return
+      cardActive = false
+      cardUi.remove()
+    }
+
+    // --- Detección del botón "visto" ----------------------------------------
 
     function maybeSendNameUpdate() {
       if (!currentSlug) return
@@ -89,7 +152,7 @@ export default defineContentScript({
         lastSentName = name
         sendMessageSafe({ type: 'PAGE_CONTEXT', slug: currentSlug, name })
       }
-      resolveAndMountForSlug(currentSlug)
+      resolveForSlug(currentSlug)
     }
 
     // Registra el estado actual del botón como línea base, sin depender de
@@ -153,99 +216,84 @@ export default defineContentScript({
 
     document.addEventListener('click', handleDocumentClick, true)
 
-    // --- UI inyectada (React, en Shadow Root) -------------------------------
+    // --- Resolución de datos (solo llena el store) --------------------------
 
-    let reactRoot: Root | null = null
-    let uiMounted = false
     let resolvedSlug: string | null = null
-    let resolving = false
-    let stopWatchingTheme: (() => void) | null = null
+    let resolvingSlug: string | null = null
+    // Cache del resultado de GET_LINK por slug, para no repetir la llamada cada
+    // vez que el observer reintenta mientras todavía no aparece el nombre.
+    let linkCache: { slug: string; id: number | null } | null = null
 
-    async function mountUi(slug: string, id: number | null, results: MalAnime[] | null, data: MalAnime) {
-      if (!uiMounted) {
-        const ui = await createShadowRootUi(ctx, {
-          name: 'mal-linked-view',
-          position: 'inline',
-          anchor: 'body > div > div > div:nth-child(2)',
-          append: 'first',
-          onMount: (container, _, shadowHost) => {
-            const { setSlug, setId, setTitle, setStatus, setScore, setWatchedEpisodes, setTotalEpisodes, setPicture } = useAnimeStore.getState()
+    async function resolveForSlug(slug: string) {
+      if (resolvedSlug === slug || resolvingSlug === slug) return
+      resolvingSlug = slug
+      const stale = () => currentSlug !== slug
 
-            setSlug(slug)
-            setId(id)
-            setTitle(data.title)
-            setStatus(data.my_list_status?.status ?? null)
-            setScore(data.my_list_status?.score ?? 0)
-            setWatchedEpisodes(data.my_list_status?.num_episodes_watched ?? 0)
-            setTotalEpisodes(data.num_episodes)
-            setPicture(data.main_picture.medium)
-
-            stopWatchingTheme = watchTheme(shadowHost)
-            reactRoot = createRoot(container)
-            reactRoot.render(<AnimeCard container={container} />)
-          },
-          onRemove: () => {
-            stopWatchingTheme?.()
-            stopWatchingTheme = null
-            reactRoot?.unmount()
-            reactRoot = null
-          }
-        })
-        ui.mount()
-        uiMounted = true
-      } else {
-        console.error(`La UI ya está montada para ${slug}`)
-      }
-    }
-
-    function unmountUi() {
-      reactRoot?.unmount()
-      reactRoot = null
-      uiMounted = false
-    }
-
-    // Punto único de decisión: no se monta nada hasta saber con certeza si el
-    // anime ya está vinculado, o hasta que se agotó el intento de auto-vínculo.
-    async function resolveAndMountForSlug(slug: string) {
-      if (resolvedSlug === slug || resolving) return
-      resolving = true
       try {
-        const existing = await sendMessage({ type: 'GET_LINK', slug })
-        if (!existing?.ok) {
-          pushToast(`No se pudo obtener el enlace existente para ${slug}`, 'error')
-          return
-        }
-        if (existing.data.id != null) {
-          resolvedSlug = slug
-          const res = await sendMessage({ type: 'GET_DETAILS', id: existing.data.id })
-          if (!res.ok) {
-            pushToast(`No se pudieron obtener los detalles de MAL para ${slug}`, 'error')
+        const store = useAnimeStore.getState()
+
+        // 1) Enlace existente
+        let id: number | null
+        if (linkCache?.slug === slug) {
+          id = linkCache.id
+        } else {
+          const existing = await sendMessage({ type: 'GET_LINK', slug })
+          if (stale()) return
+          if (!existing?.ok) {
+            pushToast(`No se pudo obtener el enlace existente para ${slug}`, 'error')
+            store.setLoading(false)
             return
           }
-          await mountUi(slug, existing.data.id, null, res.data.details)
-          return
+          id = existing.data.id
+          linkCache = { slug, id }
         }
 
-        const name = getAnimeName()
-        if (!name) return
+        // 2) Si no hay enlace, intentar auto-vincular
+        if (id == null) {
+          const name = getAnimeName()
+          if (!name) return // el observer reintentará cuando aparezca el nombre
+
+          store.setTitle(name)
+          resolvedSlug = slug
+          const result = await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
+          if (stale()) return
+
+          id = result.ok ? result.data.id : null
+          if (result.ok && result.data.autoLinked && id) {
+            pushToast('Vinculado automáticamente con MAL')
+          }
+
+          if (id == null) {
+            // Sin coincidencia: pasamos al formulario de vinculación.
+            store.setId(null)
+            store.setView('link-form')
+            store.setLoading(false)
+            return
+          }
+        }
 
         resolvedSlug = slug
-        const result = await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
-        const id = result.ok ? result.data.id : null
-        const results = result.ok ? (result.data.results ?? null) : null
+        store.setId(id)
 
-        if (result?.ok && result.data.autoLinked && result.data.id) {
-          pushToast(`Vinculado automáticamente con MAL`)
-        }
-
-        const res = await sendMessage({ type: 'GET_DETAILS', id: id! })
+        // 3) Detalles de MAL
+        const res = await sendMessage({ type: 'GET_DETAILS', id })
+        if (stale()) return
         if (!res.ok || !res.data.details) {
-          pushToast(`No se pudieron obtener los detalles de MAL para ${name}`, 'error')
+          pushToast(`No se pudieron obtener los detalles de MAL para ${slug}`, 'error')
+          store.setLoading(false)
           return
         }
-        await mountUi(slug, id, results, res.data.details)
+
+        const data = res.data.details
+        store.setTitle(data.title)
+        store.setStatus(data.my_list_status?.status ?? null)
+        store.setScore(data.my_list_status?.score ?? 0)
+        store.setWatchedEpisodes(data.my_list_status?.num_episodes_watched ?? 0)
+        store.setTotalEpisodes(data.num_episodes)
+        store.setPicture(data.main_picture.medium)
+        store.setLoading(false)
       } finally {
-        resolving = false
+        if (resolvingSlug === slug) resolvingSlug = null
       }
     }
 
@@ -261,14 +309,15 @@ export default defineContentScript({
         observedButton = null
         lastSentSlug = null
         resolvedSlug = null
-
-        unmountUi()
+        resolvingSlug = null
+        linkCache = null
+        unmountCard()
         return
       }
 
       const slugChanged = parsed.slug !== currentSlug
 
-      currentSlug = parsed.slug!
+      currentSlug = parsed.slug
       currentEpisode = parsed.episode
 
       if (slugChanged) {
@@ -276,10 +325,18 @@ export default defineContentScript({
         lastKnownWatched = null
         lastSentSlug = null
         resolvedSlug = null
+        resolvingSlug = null
+        linkCache = null
         observedButton = null
-        unmountUi() // evita ver la tarjeta del anime anterior mientras se resuelve el nuevo
+
+        // Store limpio ANTES de montar, así no se ve el anime anterior.
+        const store = useAnimeStore.getState()
+        store.reset()
+        store.setSlug(parsed.slug)
+        store.setLoading(true)
       }
 
+      mountCard() // no espera a nada más
       maybeSendNameUpdate()
       syncButtonBaseline()
     }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Slider from '../Slider'
 import { Star } from 'lucide-react'
-import { COLORS } from './state'
+import { COLORS } from './useAnimeStore'
 
 interface ScoreProps {
   score: number | null

@@ -1,4 +1,4 @@
-import { useAnimeStore } from './state'
+import { useAnimeStore } from './useAnimeStore'
 import { Link } from 'lucide-react'
 import Score from './Score'
 

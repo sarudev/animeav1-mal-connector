@@ -11,6 +11,7 @@ interface AnimeStore {
   picture: string
   showOptions: boolean
   view: 'linked' | 'link-form'
+  loading: boolean
   setSlug: (slug: string) => void
   setId: (id: number | null) => void
   setTitle: (title: string) => void
@@ -21,9 +22,11 @@ interface AnimeStore {
   setPicture: (picture: string) => void
   setShowOptions: (cb: ((prev: boolean) => boolean) | boolean) => void
   setView: (view: 'linked' | 'link-form') => void
+  setLoading: (loading: boolean) => void
+  reset: () => void
 }
 
-export const useAnimeStore = create<AnimeStore>(set => ({
+const INITIAL = {
   slug: '',
   id: null,
   title: '',
@@ -33,7 +36,12 @@ export const useAnimeStore = create<AnimeStore>(set => ({
   totalEpisodes: 0,
   picture: '',
   showOptions: false,
-  view: 'linked',
+  view: 'linked' as const,
+  loading: true
+}
+
+export const useAnimeStore = create<AnimeStore>(set => ({
+  ...INITIAL,
   setSlug: slug => set({ slug }),
   setId: (id: number | null) => set({ id }),
   setTitle: (title: string) => set({ title }),
@@ -43,7 +51,9 @@ export const useAnimeStore = create<AnimeStore>(set => ({
   setTotalEpisodes: totalEpisodes => set({ totalEpisodes }),
   setPicture: picture => set({ picture }),
   setShowOptions: cb => set(state => ({ showOptions: typeof cb === 'function' ? cb(state.showOptions) : cb })),
-  setView: (view: 'linked' | 'link-form') => set({ view })
+  setView: (view: 'linked' | 'link-form') => set({ view }),
+  setLoading: loading => set({ loading }),
+  reset: () => set({ ...INITIAL })
 }))
 
 export const COLORS = ['#F87171', '#F18371', '#EA9570', '#E3A870', '#DCBA6F', '#D8C36F', '#C8C671', '#A9CC75', '#89D278', '#6AD87C', '#4ADE80']

@@ -9,7 +9,7 @@ import useDebouncedEffect from '@/hooks/useDebouncedEffect'
 import type { MalAnime, MalListStatus } from '@/utils/mal'
 import '@/styles/tailwind.css'
 import LinkedCard from './LinkedCard'
-import { useAnimeStore } from './state'
+import { useAnimeStore } from './useAnimeStore'
 import { sendMessage } from '@/entrypoints/background'
 
 export interface Props {
@@ -17,9 +17,8 @@ export interface Props {
 }
 
 export default function AnimeCard({ container }: Props) {
-  const { score, setScore, status, view, setView, slug, title, id, setId, setTitle } = useAnimeStore()
+  const { score, setScore, status, view, setView, slug, title, id, setId, setTitle, loading } = useAnimeStore()
 
-  const lastConfirmedScore = useRef<number | null>(score)
   const [searchInput, setSearchInput] = useState('')
   const [searchResults, setSearchResults] = useState<MalAnime[]>([])
   const [selectedResult, setSelectedResult] = useState<MalAnime | null>(null)
@@ -31,18 +30,27 @@ export default function AnimeCard({ container }: Props) {
 
   const autoSearchedFor = useRef<string | null>(null)
   const initialResultsConsumed = useRef(false)
+  const lastConfirmedScore = useRef<number | null>(null)
 
   useEffect(() => {
-    const onChanged: Parameters<typeof browser.storage.onChanged.addListener>[0] = (changes, area) => {
-      if (area !== 'local' || !changes.animeLinks) return
-      const newLinks = (changes.animeLinks.newValue as Record<string, number>) || {}
-      const newLink = newLinks[slug] || null
-      setView(newLink ? 'linked' : 'link-form')
-    }
-    browser.storage.onChanged.addListener(onChanged)
+    lastConfirmedScore.current = loading ? null : score
+  }, [loading])
 
-    return () => browser.storage.onChanged.removeListener(onChanged)
-  }, [slug])
+  useDebouncedEffect(score, 1000, async () => {
+    if (loading || id == null) return
+    if (lastConfirmedScore.current == null) return
+    if (score === lastConfirmedScore.current) return
+    if (status == null || status === 'plan_to_watch') return
+
+    const res = await sendMessage({ type: 'UPDATE_SCORE', id, score, slug })
+    if (res?.ok) {
+      lastConfirmedScore.current = score
+      pushToast('Puntuación actualizada')
+    } else {
+      setScore(lastConfirmedScore.current!)
+      pushToast(`Error al actualizar la puntuación: ${res?.error || res}`, 'error')
+    }
+  })
 
   useEffect(() => {
     // if (view !== 'link-form' || !title) return
@@ -60,20 +68,6 @@ export default function AnimeCard({ container }: Props) {
     //   if (results) applyResults(results, animeData.title)
     // })()
   }, [view, slug, title])
-
-  useDebouncedEffect(score, 1000, async () => {
-    if (score === lastConfirmedScore.current) return
-    if (status == null || status === 'plan_to_watch') return
-
-    const res = await sendMessage({ type: 'UPDATE_SCORE', id: id!, score, slug })
-    if (res?.ok) {
-      lastConfirmedScore.current = score
-      pushToast('Puntuación actualizada')
-    } else {
-      setScore(lastConfirmedScore.current!)
-      pushToast(`Error al actualizar la puntuación: ${res?.error || res}`, 'error')
-    }
-  })
 
   async function performSearch(query: string): Promise<MalAnime[] | null> {
     if (query.length < 3) {

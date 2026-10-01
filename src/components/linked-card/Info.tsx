@@ -1,6 +1,6 @@
 import { Settings } from 'lucide-react'
 import Status from './Status'
-import { useAnimeStore } from './state'
+import { useAnimeStore } from './useAnimeStore'
 
 export default function Info() {
   const { score, status, id, title, setShowOptions } = useAnimeStore()

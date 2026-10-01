@@ -130,6 +130,7 @@ export async function searchAnime(query: string): Promise<AnimeResult[]> {
 }
 
 async function searchAnimeViaApi(query: string): Promise<MalAnime[]> {
+  console.log(query)
   const params = new URLSearchParams({
     q: query.slice(0, 64),
     limit: '10',

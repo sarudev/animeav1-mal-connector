@@ -245,6 +245,7 @@ export default defineBackground(() => {
 
           case 'SEARCH_ANIME': {
             const { query } = message
+            console.log(query)
             const results = await searchAnime(query)
             sendResponse({ ok: true, data: { results } } satisfies SEARCH_ANIME_RESPONSE)
             break
