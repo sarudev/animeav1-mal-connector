@@ -23,7 +23,6 @@ export interface MalAnime {
   main_picture: { medium: string; large: string }
   num_episodes: number
   my_list_status?: MalListStatus
-  score: number
 }
 
 export type AnimeResult = Omit<MalAnime, 'my_list_status'>
@@ -95,30 +94,29 @@ export async function getCurrentUser(): Promise<MalUser> {
   return malFetch<MalUser>('/users/@me?fields=name')
 }
 
-const ANIME_URL_REGEX = /^https:\/\/myanimelist\.net\/anime\/(\d+)\//
+const ANIME_URL_REGEX = /^https:\/\/myanimelist\.net\/anime\/(\d+)(?:[/?#]|$)/
 
 async function searchAnimeViaRedirect(query: string): Promise<AnimeResult | null> {
   const url = `https://myanimelist.net/anime.php?q=${encodeURIComponent(query)}`
   const res = await fetch(url, { redirect: 'follow' })
 
-  if (!res.redirected) return null // se quedó en la página de resultados: no hubo match único
+  if (!res.redirected) return null
 
   const match = ANIME_URL_REGEX.exec(res.url)
   if (!match || match[1] == null) return null
 
   const id = parseInt(match[1], 10)
-  const details = await getAnimeDetails(id) // ya la tenés implementada, usa la API oficial por ID
+  const details = await getAnimeDetails(id)
   return {
     id,
     title: details.title,
     num_episodes: details.num_episodes,
-    main_picture: details.main_picture,
-    score: details.score
+    main_picture: details.main_picture
   }
 }
 
 export async function searchAnime(query: string): Promise<AnimeResult[]> {
-  const apiResults = await searchAnimeViaApi(query) // tu implementación actual contra /v2/anime
+  const apiResults = await searchAnimeViaApi(query)
   if (apiResults.length > 0) return apiResults
 
   try {
@@ -130,7 +128,6 @@ export async function searchAnime(query: string): Promise<AnimeResult[]> {
 }
 
 async function searchAnimeViaApi(query: string): Promise<MalAnime[]> {
-  console.log(query)
   const params = new URLSearchParams({
     q: query.slice(0, 64),
     limit: '10',

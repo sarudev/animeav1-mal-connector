@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { twMerge } from 'tailwind-merge'
 import '../styles/tailwind.css'
 
 interface BadgeProps {
@@ -9,7 +10,7 @@ interface BadgeProps {
 
 export function Badge({ children, show = true, className = '' }: BadgeProps) {
   return (
-    <div className={`relative w-min ${className}`}>
+    <div className={twMerge(`relative w-min`, className)}>
       {children}
       {show && (
         <span className='absolute -top-1 -right-1 flex h-3 w-3'>

@@ -1,39 +1,8 @@
 // Service worker: enruta los mensajes de content scripts / popup / options
 // y aplica la lógica de sincronización con MyAnimeList.
 import type { MalListStatus } from '@/utils/mal'
+import type { Response } from '@/utils/types'
 import { browser } from 'wxt/browser'
-import type {
-  AUTO_LINK_ANIME,
-  AUTO_LINK_ANIME_RESPONSE,
-  GET_DETAILS,
-  GET_DETAILS_RESPONSE,
-  GET_LINK,
-  GET_LINK_RESPONSE,
-  LINK_ANIME,
-  LINK_ANIME_RESPONSE,
-  UNLINK_ANIME,
-  UNLINK_ANIME_RESPONSE,
-  SEARCH_ANIME,
-  SEARCH_ANIME_RESPONSE,
-  GET_TAB_CONTEXT,
-  GET_TAB_CONTEXT_RESPONSE,
-  UPDATE_SCORE,
-  UPDATE_SCORE_RESPONSE,
-  TOGGLE_WATCHED,
-  TOGGLE_WATCHED_RESPONSE,
-  TEST_MAL_CONNECTION,
-  TEST_MAL_CONNECTION_RESPONSE,
-  SAVE_MAL_AUTH,
-  SAVE_MAL_AUTH_RESPONSE,
-  GET_MAL_AUTH,
-  GET_MAL_AUTH_RESPONSE,
-  GET_LINKED_ANIME,
-  GET_LINKED_ANIME_RESPONSE,
-  PAGE_CONTEXT,
-  PAGE_CONTEXT_RESPONSE,
-  Message,
-  Response
-} from '@/utils/types'
 
 /**
  * Calcula los campos a enviar a MAL según el estado actual de la lista del
@@ -46,18 +15,22 @@ import type {
  *   - Se actualiza num_watched_episodes al número de ese capítulo.
  *   - Si MAL conoce el total de episodios y el capítulo marcado es el
  *     último, se pasa a "completed" con finish_date.
- * - Al desmarcar un capítulo como visto:
- *   - Si el anime ya está "completed", no se toca nada.
- *   - En caso contrario, se decrementa num_watched_episodes a (episodio - 1)
- *     y se asegura que el estado sea "watching" (con start_date si falta).
+ * - Al desmarcar un capítulo como visto, no se modifica MAL, excepto cuando
+ *   es el último episodio de un anime "completed"; en ese caso vuelve a
+ *   "watching" y el contador retrocede al episodio anterior.
  */
-function computeListUpdate(cur: MalListStatus, totalEpisodes: number, episode: number, watched: boolean): Record<string, string | number> | null {
+function computeListUpdate(
+  cur: MalListStatus | null,
+  totalEpisodes: number,
+  episode: number,
+  watched: boolean
+): Record<string, string | number> | null {
   const update: Record<string, string | number> = {}
 
   if (watched) {
-    if (cur.status !== 'watching') {
+    if (!cur || cur.status !== 'watching') {
       update.status = 'watching'
-      if (!cur.start_date) update.start_date = todayISO()
+      if (!cur?.start_date) update.start_date = todayISO()
     }
 
     update.num_watched_episodes = episode
@@ -65,19 +38,16 @@ function computeListUpdate(cur: MalListStatus, totalEpisodes: number, episode: n
     if (totalEpisodes && totalEpisodes > 0 && episode >= totalEpisodes) {
       update.status = 'completed'
       update.finish_date = todayISO()
-      if (!cur.start_date && !update.start_date) update.start_date = todayISO()
+      if (!cur?.start_date && !update.start_date) update.start_date = todayISO()
     }
   } else {
-    if (cur.status === 'completed') {
+    if (!cur || cur.status !== 'completed' || totalEpisodes <= 0 || episode < totalEpisodes) {
       return null
     }
 
     update.num_watched_episodes = Math.max(0, episode - 1)
-
-    if (cur.status !== 'watching') {
-      update.status = 'watching'
-      if (!cur.start_date) update.start_date = todayISO()
-    }
+    update.status = 'watching'
+    if (!cur?.start_date) update.start_date = todayISO()
   }
 
   return update
@@ -105,7 +75,7 @@ async function handleToggleWatched({
   }
 
   const details = await getAnimeDetails(id)
-  const update = computeListUpdate(details.my_list_status!, details.num_episodes, episode, watched)
+  const update = computeListUpdate(details.my_list_status ?? null, details.num_episodes, episode, watched)
 
   if (!update) {
     return { ok: true, data: { skipped: true } }
@@ -129,19 +99,19 @@ async function autoLinkAnime(slug: string, name: string, tabId: number): Promise
   const id = await getId(slug)
   if (id != null) {
     await setBadgeForTab(tabId, true)
-    return { ok: true, data: { autoLinked: false, reason: 'existing', id, results: null } }
+    return { ok: true, data: { autoLinked: false, reason: 'existing', id } }
   }
 
   const results = await searchAnime(name)
-  const anime = results.find(a => a.title.toLowerCase() === name.toLowerCase()) ?? results[0]
+  const anime = results.find(a => a.title.toLowerCase() === name.toLowerCase())
   if (!anime) {
     await setBadgeForTab(tabId, false)
-    return { ok: true, data: { autoLinked: false, reason: 'no_results', results, id: null } }
+    return { ok: true, data: { autoLinked: false, reason: 'no_exact_match', id: null } }
   }
 
   await setId(slug, anime.id)
   await setBadgeForTab(tabId, true)
-  return { ok: true, data: { autoLinked: true, id: anime.id, results: null } }
+  return { ok: true, data: { autoLinked: true, id: anime.id } }
 }
 
 export async function sendMessage(message: PAGE_CONTEXT): Promise<PAGE_CONTEXT_RESPONSE>
@@ -157,7 +127,6 @@ export async function sendMessage(message: TOGGLE_WATCHED): Promise<TOGGLE_WATCH
 export async function sendMessage(message: TEST_MAL_CONNECTION): Promise<TEST_MAL_CONNECTION_RESPONSE>
 export async function sendMessage(message: SAVE_MAL_AUTH): Promise<SAVE_MAL_AUTH_RESPONSE>
 export async function sendMessage(message: GET_MAL_AUTH): Promise<GET_MAL_AUTH_RESPONSE>
-export async function sendMessage(message: GET_LINKED_ANIME): Promise<GET_LINKED_ANIME_RESPONSE>
 export async function sendMessage(message: Message): Promise<Response<unknown>> {
   return browser.runtime.sendMessage(message)
 }
@@ -245,7 +214,6 @@ export default defineBackground(() => {
 
           case 'SEARCH_ANIME': {
             const { query } = message
-            console.log(query)
             const results = await searchAnime(query)
             sendResponse({ ok: true, data: { results } } satisfies SEARCH_ANIME_RESPONSE)
             break
@@ -262,7 +230,7 @@ export default defineBackground(() => {
             const { id, score } = message
 
             const details = await getAnimeDetails(id)
-            if (details == null || details.my_list_status?.status === null || details.my_list_status?.status === 'plan_to_watch') {
+            if (details == null || details.my_list_status?.status == null || details.my_list_status?.status === 'plan_to_watch') {
               sendResponse({ ok: false, error: 'not_available' } satisfies UPDATE_SCORE_RESPONSE)
               return
             }
@@ -294,13 +262,6 @@ export default defineBackground(() => {
           case 'GET_MAL_AUTH': {
             const auth = await getMalAuth()
             sendResponse({ ok: true, data: { auth } } satisfies GET_MAL_AUTH_RESPONSE)
-            break
-          }
-
-          case 'GET_LINKED_ANIME': {
-            const { slug } = message
-            const id = await getId(slug)
-            sendResponse({ ok: true, data: { id } } satisfies GET_LINKED_ANIME_RESPONSE)
             break
           }
 

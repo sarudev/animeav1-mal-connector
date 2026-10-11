@@ -17,18 +17,15 @@ export default function Picture() {
             <span className='w-max text-xs'>ID {id}</span>
             <div className='flex justify-between items-end'>
               {watchedEpisodes != null && showStats && (
-                <div className={watchedEpisodes === totalEpisodes ? 'text-main' : ''}>
+                <div className={totalEpisodes > 0 && watchedEpisodes === totalEpisodes ? 'text-main' : ''}>
                   <span>{watchedEpisodes}</span>
                   <span className='font-normal text-sm'>/</span>
-                  <span className='font-normal text-xs'>{totalEpisodes ?? '?'}</span>
+                  <span className='font-normal text-xs'>{totalEpisodes == 0 ? '?' : totalEpisodes}</span>
                 </div>
               )}
               {showStats && (
-                <div
-                  className='text-subs flex gap-1 items-c
-                enter text-base'
-                >
-                  <span style={score !== null ? { color: COLORS[score] } : undefined}>{score ?? '?'}</span>
+                <div className='text-subs flex gap-1 items-center text-base'>
+                  <span style={{ color: COLORS[score] }}>{score == 0 ? '?' : score}</span>
                   <Star size={12} fill='currentColor' className='text-warn' />
                 </div>
               )}

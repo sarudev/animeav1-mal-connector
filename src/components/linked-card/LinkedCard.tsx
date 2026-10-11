@@ -1,4 +1,3 @@
-import type { Dispatch, SetStateAction } from 'react'
 import Picture from './Picture'
 import Info from './Info'
 import Options from './Options'

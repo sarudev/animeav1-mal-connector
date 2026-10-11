@@ -195,12 +195,33 @@ export default defineContentScript({
 
           if (slug == null || episode == null) return
 
-          sendMessageSafe({
+          console.log({ slug, episode, baselineWatched, attempts })
+          void sendMessage({
             type: 'TOGGLE_WATCHED',
             slug,
             episode,
             watched
           })
+            .then(response => {
+              if (!response.ok) {
+                pushToast(`No se pudo actualizar el capítulo ${episode} en MAL`, 'error')
+                return
+              }
+
+              if (!watched) {
+                const reopened = response.data.status?.status === 'watching'
+                pushToast(`Capítulo ${episode} marcado como no visto${reopened ? '; anime vuelve a estar viendo' : ''}`)
+                return
+              }
+
+              if (response.data.skipped) return
+
+              const completed = response.data.status?.status === 'completed'
+              pushToast(`Capítulo ${episode} marcado como visto${completed ? '. Anime completado' : ''}`)
+            })
+            .catch(() => {
+              pushToast(`No se pudo actualizar el capítulo ${episode} en MAL`, 'error')
+            })
           return
         }
 
@@ -255,12 +276,17 @@ export default defineContentScript({
 
           store.setTitle(name)
           resolvedSlug = slug
-          const result = await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
+          const result = /* await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name }) */ {
+            ok: true,
+            data: { autoLinked: false, reason: 'no_exact_match', id: null }
+          }
           if (stale()) return
 
           id = result.ok ? result.data.id : null
           if (result.ok && result.data.autoLinked && id) {
             pushToast('Vinculado automáticamente con MAL')
+          } else if (!result.ok || !result.data.autoLinked) {
+            pushToast('No se pudo vincular automáticamente con MAL', 'error')
           }
 
           if (id == null) {
@@ -284,13 +310,7 @@ export default defineContentScript({
           return
         }
 
-        const data = res.data.details
-        store.setTitle(data.title)
-        store.setStatus(data.my_list_status?.status ?? null)
-        store.setScore(data.my_list_status?.score ?? 0)
-        store.setWatchedEpisodes(data.my_list_status?.num_episodes_watched ?? 0)
-        store.setTotalEpisodes(data.num_episodes)
-        store.setPicture(data.main_picture.medium)
+        store.setDetails(res.data.details)
         store.setLoading(false)
       } finally {
         if (resolvingSlug === slug) resolvingSlug = null

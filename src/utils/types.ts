@@ -81,11 +81,6 @@ export interface GET_MAL_AUTH {
   type: 'GET_MAL_AUTH'
 }
 
-export interface GET_LINKED_ANIME {
-  type: 'GET_LINKED_ANIME'
-  slug: string
-}
-
 export type Message =
   | PAGE_CONTEXT
   | AUTO_LINK_ANIME
@@ -100,14 +95,11 @@ export type Message =
   | TEST_MAL_CONNECTION
   | SAVE_MAL_AUTH
   | GET_MAL_AUTH
-  | GET_LINKED_ANIME
 
 export type Response<T = undefined> = { ok: true; data: T } | { ok: false; error: string }
 
 export type PAGE_CONTEXT_RESPONSE = Response
-export type AUTO_LINK_ANIME_RESPONSE = Response<
-  { autoLinked: true; id: number; results: null } | { autoLinked: false; id: number | null; results: MalAnime[] | null; reason: string }
->
+export type AUTO_LINK_ANIME_RESPONSE = Response<{ autoLinked: true; id: number } | { autoLinked: false; id: number | null; reason: string }>
 export type GET_TAB_CONTEXT_RESPONSE = Response<{ context: TabContext | null; id: number | null }>
 export type GET_LINK_RESPONSE = Response<{ id: number | null }>
 export type LINK_ANIME_RESPONSE = Response<{ title: string | null; pictureUrl: string | null }>
@@ -119,4 +111,3 @@ export type TOGGLE_WATCHED_RESPONSE = Response<{ skipped?: boolean; status?: Mal
 export type TEST_MAL_CONNECTION_RESPONSE = Response<{ user: MalUser }>
 export type SAVE_MAL_AUTH_RESPONSE = Response
 export type GET_MAL_AUTH_RESPONSE = Response<{ auth: MalAuth | null }>
-export type GET_LINKED_ANIME_RESPONSE = Response<{ id: number | null }>

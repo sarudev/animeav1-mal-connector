@@ -10,7 +10,7 @@ export default defineConfig({
     binaries: {
       edge: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'
     },
-    startUrls: ['https://animeav1.com/media/super-no-ura-de-yani-suu-futari/11'],
+    startUrls: ['https://animeav1.com/media/tensei-goblin-dakedo-shitsumon-aru/2'],
     chromiumProfile: resolve('./.wxt-profile'),
     keepProfileChanges: true
   },
