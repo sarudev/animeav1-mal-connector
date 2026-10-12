@@ -1,19 +1,20 @@
+// LinkFormActions.tsx
 import { ChevronLeft, Unlink } from 'lucide-react'
-import { useAnimeStore } from './useAnimeStore'
 import { useState } from 'react'
 import { sendMessage } from '@/entrypoints/background'
+import Button from '../Button'
+import { useAnimeStore } from './useAnimeStore'
+import { useLinkFormStore } from './useLinkFormStore'
 
 interface LinkFormActionsProps {
   onUnlinked: (title: string | null) => void
-  setSearchResults: (results: any[]) => void
-  setSelectedResult: (result: any | null) => void
-  setManualId: (id: string) => void
-  setNoResultsQuery: (query: string | null) => void
-  setError: (error: string) => void
 }
 
-export function LinkFormActions({ setSearchResults, setSelectedResult, setManualId, setNoResultsQuery, setError, onUnlinked }: LinkFormActionsProps) {
-  const { id, setView, reset, setSlug, setTitle, setLoading, slug, title, setLastConfirmedScore } = useAnimeStore()
+export function LinkFormActions({ onUnlinked }: LinkFormActionsProps) {
+  const id = useAnimeStore(s => s.id)
+  const setView = useAnimeStore(s => s.setView)
+  const setError = useLinkFormStore(s => s.setError)
+  const clearResults = useLinkFormStore(s => s.clearResults)
   const [unlinkLoading, setUnlinkLoading] = useState(false)
 
   async function unlink() {
@@ -21,27 +22,19 @@ export function LinkFormActions({ setSearchResults, setSelectedResult, setManual
     setError('')
     setUnlinkLoading(true)
     try {
+      const { slug, title } = useAnimeStore.getState()
+
       const res = await sendMessage({ type: 'UNLINK_ANIME', slug })
       if (!res?.ok) {
         setError(res?.error || 'No se pudo desvincular.')
         return
       }
 
-      const currentTitle = title
-      reset()
-      setSlug(slug)
-      setTitle(currentTitle)
-      setLoading(false)
-      setView('link-form')
-
-      setLastConfirmedScore(0)
-      setSearchResults([])
-      setSelectedResult(null)
-      setManualId('')
-      setNoResultsQuery(null)
+      useAnimeStore.getState().setUnlinked()
+      clearResults()
 
       pushToast('Anime desvinculado')
-      onUnlinked(currentTitle)
+      onUnlinked(title)
     } finally {
       setUnlinkLoading(false)
     }

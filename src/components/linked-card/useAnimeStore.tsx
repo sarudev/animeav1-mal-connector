@@ -31,6 +31,7 @@ interface AnimeStore extends AnimeStoreVars {
   reset: () => void
   patch: (partial: Partial<AnimeStoreVars>) => void
   setDetails: (d: MalAnime) => void
+  setUnlinked: () => void
 }
 
 const INITIAL: AnimeStoreVars = {
@@ -73,7 +74,15 @@ export const useAnimeStore = create<AnimeStore>(set => ({
       watchedEpisodes: d.my_list_status?.num_episodes_watched ?? 0,
       totalEpisodes: d.num_episodes ?? 0,
       picture: d.main_picture?.medium ?? ''
-    })
+    }),
+  setUnlinked: () =>
+    set(state => ({
+      ...INITIAL,
+      slug: state.slug,
+      title: state.title,
+      loading: false,
+      view: 'link-form'
+    }))
 }))
 
 export const COLORS = ['#F87171', '#F18371', '#EA9570', '#E3A870', '#DCBA6F', '#D8C36F', '#C8C671', '#A9CC75', '#89D278', '#6AD87C', '#4ADE80']
