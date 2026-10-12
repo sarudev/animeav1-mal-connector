@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react'
-import { COLORS, useAnimeStore } from './useAnimeStore'
-import LazyImage from '../LazyImage'
+import { COLORS, useAnimeStore } from '../useAnimeStore'
+import LazyImage from '../../LazyImage'
 
 export default function Picture() {
   const { score, watchedEpisodes, totalEpisodes, picture, status, id, loading } = useAnimeStore()

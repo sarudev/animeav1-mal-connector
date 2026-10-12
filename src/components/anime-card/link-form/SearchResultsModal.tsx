@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { ExternalLink } from 'lucide-react'
-import Tooltip from '../tooltip/Tooltip'
+import Tooltip from '../../tooltip/Tooltip'
 import type { MalAnime } from '@/utils/mal'
 import AnimeResultItem from './AnimeResultItem'
 

@@ -1,6 +1,6 @@
 import Card from '../Card'
-import LinkedCard from './LinkedCard'
-import LinkForm from './LinkForm'
+import LinkedCard from './linked-card/LinkedCard'
+import LinkForm from './link-form/LinkForm'
 import { useAnimeStore } from './useAnimeStore'
 import '@/styles/tailwind.css'
 

@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react'
-import Tooltip from '../tooltip/Tooltip'
+import Tooltip from '../../tooltip/Tooltip'
 import type { MalAnime } from '@/utils/mal'
 
 interface Props {

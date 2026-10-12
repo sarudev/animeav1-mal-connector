@@ -1,12 +1,12 @@
 import { createRoot, type Root } from 'react-dom/client'
 import { browser } from 'wxt/browser'
-import AnimeCard from '@/components/linked-card/AnimeCard'
+import AnimeCard from '@/components/anime-card/AnimeCard'
 import { watchTheme } from '@/utils/theme-sync'
 import ToastHolder from '@/components/ToastHolder'
 import { pushToast } from '@/utils/toast-store'
 import { sendMessage } from './background'
 import '@/styles/tailwind.css'
-import { useAnimeStore } from '@/components/linked-card/useAnimeStore'
+import { useAnimeStore } from '@/components/anime-card/useAnimeStore'
 
 export default defineContentScript({
   matches: ['https://animeav1.com/*'],

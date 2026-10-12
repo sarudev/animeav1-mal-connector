@@ -1,10 +1,10 @@
 // LinkForm.tsx
 import { Link, RotateCcw } from 'lucide-react'
 import { useRef, useState } from 'react'
-import Tooltip from '../tooltip/Tooltip'
-import Button from '../Button'
-import Input from '../Input'
-import { useAnimeStore } from './useAnimeStore'
+import Tooltip from '../../tooltip/Tooltip'
+import Button from '../../Button'
+import Input from '../../Input'
+import { useAnimeStore } from '../useAnimeStore'
 import { useLinkFormStore } from './useLinkFormStore'
 import { useLinkFormEffects } from './useLinkFormEffects'
 import { LinkFormActions } from './LinkFormActions'
@@ -68,7 +68,6 @@ export default function LinkForm({ container }: LinkFormProps) {
         }}
         onFocus={() => setModalOpen(true)}
         placeholder='Buscar anime...'
-        loading={searchLoading}
         error={error}
         hint={
           noResultsQuery && (

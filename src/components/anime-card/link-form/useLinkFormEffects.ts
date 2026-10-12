@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import useDebouncedEffect from '@/hooks/useDebouncedEffect'
-import { useAnimeStore } from './useAnimeStore'
+import { useAnimeStore } from '../useAnimeStore'
 import { useLinkFormStore } from './useLinkFormStore'
 
 export function useLinkFormEffects() {

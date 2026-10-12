@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { sendMessage } from '@/entrypoints/background'
 import type { MalAnime } from '@/utils/mal'
-import { useAnimeStore } from './useAnimeStore'
+import { useAnimeStore } from '../useAnimeStore'
 
 let searchRequestId = 0
 let manualRequestId = 0

@@ -1,5 +1,5 @@
 import { ChevronRight } from 'lucide-react'
-import Input from '../Input'
+import Input from '../../Input'
 
 interface Props {
   value: string

@@ -2,8 +2,8 @@
 import { ChevronLeft, Unlink } from 'lucide-react'
 import { useState } from 'react'
 import { sendMessage } from '@/entrypoints/background'
-import Button from '../Button'
-import { useAnimeStore } from './useAnimeStore'
+import Button from '@/components/Button'
+import { useAnimeStore } from '../useAnimeStore'
 import { useLinkFormStore } from './useLinkFormStore'
 
 interface LinkFormActionsProps {

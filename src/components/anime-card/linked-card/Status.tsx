@@ -1,6 +1,6 @@
 import { Clock, Pause, Play, X, Check, BadgeQuestionMark } from 'lucide-react'
-import { useAnimeStore } from './useAnimeStore'
-import Skeleton from '../skeleton/Skeleton'
+import { useAnimeStore } from '../useAnimeStore'
+import Skeleton from '@/components/skeleton/Skeleton'
 
 const STATUS_CONFIG: Record<NonNullable<MalListStatus['status'] | 'null'>, { icon: typeof Check; label: string; className: string }> = {
   completed: { icon: Check, label: 'Completado', className: 'text-wins' },

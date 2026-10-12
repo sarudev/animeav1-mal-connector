@@ -1,7 +1,7 @@
 import { Settings } from 'lucide-react'
 import Status from './Status'
-import { useAnimeStore } from './useAnimeStore'
-import Skeleton from '../skeleton/Skeleton'
+import { useAnimeStore } from '../useAnimeStore'
+import Skeleton from '@/components/skeleton/Skeleton'
 
 export default function Info() {
   const { score, status, id, title, loading, setShowOptions } = useAnimeStore()

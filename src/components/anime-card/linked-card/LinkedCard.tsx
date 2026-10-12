@@ -1,7 +1,7 @@
 import Picture from './Picture'
 import Info from './Info'
 import Options from './Options'
-import { useAnimeStore } from './useAnimeStore'
+import { useAnimeStore } from '../useAnimeStore'
 
 export default function LinkedCard() {
   const { showOptions } = useAnimeStore()
