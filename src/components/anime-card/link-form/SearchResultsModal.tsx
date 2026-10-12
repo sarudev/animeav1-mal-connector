@@ -1,7 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { ExternalLink } from 'lucide-react'
-import Tooltip from '../../tooltip/Tooltip'
 import type { MalAnime } from '@/utils/mal'
 import AnimeResultItem from './AnimeResultItem'
 
@@ -38,25 +36,31 @@ export default function SearchResultsModal({ open, onClose, anchorRef, container
   // Cerrar con Escape o al hacer click fuera.
   useEffect(() => {
     if (!open) return
+    // getRootNode() sí devuelve el ShadowRoot cerrado desde dentro
+    const host = (container.getRootNode() as ShadowRoot).host
 
-    const onPointerDown = (e: PointerEvent) => {
-      // composedPath() porque en un Shadow Root e.target se re-targetea al host.
-      const path = e.composedPath()
-      if (modalRef.current && path.includes(modalRef.current)) return
-      if (anchorRef.current && path.includes(anchorRef.current)) return
-      onClose()
+    const inside = (path: EventTarget[]) =>
+      (modalRef.current && path.includes(modalRef.current)) || (anchorRef.current && path.includes(anchorRef.current))
+
+    const onInsidePointer = (e: Event) => {
+      if (!inside(e.composedPath())) onClose()
     }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    const onOutsidePointer = (e: Event) => {
+      if (!e.composedPath().includes(host)) onClose()
+    }
+    const onKeyDown = (e: Event) => {
+      if ((e as KeyboardEvent).key === 'Escape') onClose()
     }
 
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
+    container.addEventListener('pointerdown', onInsidePointer)
+    container.addEventListener('keydown', onKeyDown) // en container: con isolateEvents el keydown ya no llega a document
+    document.addEventListener('pointerdown', onOutsidePointer)
     return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
+      container.removeEventListener('pointerdown', onInsidePointer)
+      container.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onOutsidePointer)
     }
-  }, [open, onClose, anchorRef])
+  }, [open, onClose, anchorRef, container])
 
   if (!open || !pos || results.length === 0) return null
 

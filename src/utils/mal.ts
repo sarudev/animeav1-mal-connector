@@ -27,7 +27,17 @@ export interface MalAnime {
 
 export type AnimeResult = Omit<MalAnime, 'my_list_status'>
 
-async function refreshAccessToken(auth: MalAuth): Promise<MalAuth> {
+export class MalAuthError extends Error {
+  constructor(
+    public code: 'mal_not_configured' | 'mal_auth_failed',
+    message: string
+  ) {
+    super(message)
+    this.name = 'MalAuthError'
+  }
+}
+
+async function doRefresh(auth: MalAuth): Promise<MalAuth> {
   const body = new URLSearchParams({
     grant_type: 'refresh_token',
     refresh_token: auth.refreshToken,
@@ -43,7 +53,9 @@ async function refreshAccessToken(auth: MalAuth): Promise<MalAuth> {
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(`No se pudo refrescar el token de MAL (${res.status}): ${text}`)
+    const msg = `No se pudo refrescar el token de MAL (${res.status}): ${text}`
+    // 400/401 = refresh token o client inválidos. 5xx/red siguen siendo Error normal.
+    throw res.status === 400 || res.status === 401 ? new MalAuthError('mal_auth_failed', msg) : new Error(msg)
   }
 
   const data = await res.json()
@@ -58,10 +70,17 @@ async function refreshAccessToken(auth: MalAuth): Promise<MalAuth> {
   return updated
 }
 
+let refreshing: Promise<MalAuth> | null = null
+function refreshAccessToken(auth: MalAuth) {
+  return (refreshing ??= doRefresh(auth).finally(() => {
+    refreshing = null
+  }))
+}
+
 export async function getAccessToken(): Promise<string> {
   let auth = await getMalAuth()
-  if (!auth || !auth.clientId || !auth.clientSecret || !auth.refreshToken) {
-    throw new Error('Faltan credenciales de MyAnimeList. Configúralas en las opciones de la extensión.')
+  if (!auth?.clientId || !auth.clientSecret || !auth.refreshToken) {
+    throw new MalAuthError('mal_not_configured', 'Faltan credenciales de MyAnimeList.')
   }
 
   if (!auth.accessToken || !auth.accessTokenExpiry || Date.now() >= auth.accessTokenExpiry) {
@@ -71,7 +90,7 @@ export async function getAccessToken(): Promise<string> {
   return auth.accessToken!
 }
 
-async function malFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
+async function malFetch<T = any>(path: string, retry = true, options: RequestInit = {}): Promise<T> {
   const token = await getAccessToken()
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -81,6 +100,14 @@ async function malFetch<T = any>(path: string, options: RequestInit = {}): Promi
     }
   })
 
+  if (res.status === 401) {
+    if (retry) {
+      await setMalAuth({ ...(await getMalAuth())!, accessTokenExpiry: 0 })
+      return malFetch(path, false, options)
+    }
+    throw new MalAuthError('mal_auth_failed', 'MAL rechazó el token.')
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`Error de la API de MAL (${res.status}): ${text}`)
@@ -88,6 +115,11 @@ async function malFetch<T = any>(path: string, options: RequestInit = {}): Promi
 
   if (res.status === 204) return null as T
   return res.json()
+}
+
+export async function connectMal(creds: MalCredentials): Promise<MalUser | null> {
+  await doRefresh({ ...creds }) // valida y persiste el refresh token rotado; si falla, no se guarda nada
+  return getCurrentUser().catch(() => null) // las credenciales ya son válidas aunque esto falle
 }
 
 export async function getCurrentUser(): Promise<MalUser> {
@@ -146,7 +178,7 @@ export async function getAnimeDetails(id: number): Promise<MalAnime> {
 
 export async function updateListStatus(id: number, fields: Record<string, string | number>): Promise<MalListStatus> {
   const body = new URLSearchParams(fields as Record<string, string>)
-  return malFetch<MalListStatus>(`/anime/${id}/my_list_status`, {
+  return malFetch<MalListStatus>(`/anime/${id}/my_list_status`, false, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body

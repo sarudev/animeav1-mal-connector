@@ -1,9 +1,8 @@
-// LinkFormActions.tsx
 import { ChevronLeft, Unlink } from 'lucide-react'
 import { useState } from 'react'
 import { sendMessage } from '@/entrypoints/background'
 import Button from '@/components/Button'
-import { useAnimeStore } from '../useAnimeStore'
+import { routeMalError, useAnimeStore } from '../useAnimeStore'
 import { useLinkFormStore } from './useLinkFormStore'
 
 interface LinkFormActionsProps {
@@ -26,6 +25,10 @@ export function LinkFormActions({ onUnlinked }: LinkFormActionsProps) {
 
       const res = await sendMessage({ type: 'UNLINK_ANIME', slug })
       if (!res?.ok) {
+        if (routeMalError(res)) {
+          pushToast('Reconecta tu cuenta de MAL para sincronizar', 'error')
+          return
+        }
         setError(res?.error || 'No se pudo desvincular.')
         return
       }

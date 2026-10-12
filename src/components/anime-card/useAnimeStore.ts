@@ -1,4 +1,7 @@
+import type { Response } from '@/utils/types'
 import { create } from 'zustand'
+
+type View = 'linked' | 'link-form' | 'auth-form'
 
 interface AnimeStoreVars {
   slug: string
@@ -11,7 +14,9 @@ interface AnimeStoreVars {
   totalEpisodes: number
   picture: string
   showOptions: boolean
-  view: 'linked' | 'link-form'
+  view: View
+  authForced: boolean
+  reconnectNonce: number
   loading: boolean
 }
 
@@ -26,7 +31,10 @@ interface AnimeStore extends AnimeStoreVars {
   setTotalEpisodes: (totalEpisodes: number) => void
   setPicture: (picture: string) => void
   setShowOptions: (cb: ((prev: boolean) => boolean) | boolean) => void
-  setView: (view: 'linked' | 'link-form') => void
+  setView: (view: View) => void
+  openAuth: () => void
+  setAuthRequired: () => void
+  notifyReconnected: () => void
   setLoading: (loading: boolean) => void
   reset: () => void
   patch: (partial: Partial<AnimeStoreVars>) => void
@@ -46,6 +54,8 @@ const INITIAL: AnimeStoreVars = {
   picture: '',
   showOptions: false,
   view: 'linked',
+  authForced: false,
+  reconnectNonce: 0,
   loading: true
 }
 
@@ -62,6 +72,9 @@ export const useAnimeStore = create<AnimeStore>(set => ({
   setPicture: picture => set({ picture }),
   setShowOptions: cb => set(state => ({ showOptions: typeof cb === 'function' ? cb(state.showOptions) : cb })),
   setView: view => set({ view }),
+  openAuth: () => set({ view: 'auth-form', authForced: false }),
+  setAuthRequired: () => set({ view: 'auth-form', authForced: true, loading: false }),
+  notifyReconnected: () => set(s => ({ view: 'linked', authForced: false, loading: true, reconnectNonce: s.reconnectNonce + 1 })),
   setLoading: loading => set({ loading }),
   reset: () => set({ ...INITIAL }),
   patch: partial => set(partial),
@@ -86,3 +99,9 @@ export const useAnimeStore = create<AnimeStore>(set => ({
 }))
 
 export const COLORS = ['#F87171', '#F18371', '#EA9570', '#E3A870', '#DCBA6F', '#D8C36F', '#C8C671', '#A9CC75', '#89D278', '#6AD87C', '#4ADE80']
+
+export function routeMalError(res: Response<unknown> | undefined): boolean {
+  if (!isMalAuthError(res)) return false
+  useAnimeStore.getState().setAuthRequired()
+  return true
+}

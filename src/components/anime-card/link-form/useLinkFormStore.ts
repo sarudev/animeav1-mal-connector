@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { sendMessage } from '@/entrypoints/background'
 import type { MalAnime } from '@/utils/mal'
-import { useAnimeStore } from '../useAnimeStore'
+import { routeMalError, useAnimeStore } from '../useAnimeStore'
 
 let searchRequestId = 0
 let manualRequestId = 0
@@ -84,7 +84,13 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
 
   async function loadAnimeDetails(animeId: number): Promise<boolean> {
     const res = await sendMessage({ type: 'GET_DETAILS', id: animeId })
-    if (!res?.ok || !res.data.details) return false
+    if (!res?.ok || !res.data.details) {
+      if (routeMalError(res)) {
+        pushToast('Reconecta tu cuenta de MAL para sincronizar', 'error')
+        return false
+      }
+      return false
+    }
     useAnimeStore.getState().setDetails(res.data.details)
     return true
   }
@@ -151,6 +157,10 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
         if (requestId !== searchRequestId) return
 
         if (!res?.ok) {
+          if (routeMalError(res)) {
+            pushToast('Reconecta tu cuenta de MAL para sincronizar', 'error')
+            return
+          }
           lastSearched = null
           set({ error: res?.error || 'Error al buscar en MAL' })
           return
@@ -194,6 +204,10 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
         if (requestId !== manualRequestId) return // llegó una más nueva
 
         if (!res?.ok || !res.data.details) {
+          if (routeMalError(res)) {
+            pushToast('Reconecta tu cuenta de MAL para sincronizar', 'error')
+            return
+          }
           set({ manualError: 'No se encontró ningún anime con ese ID.' })
           return
         }
@@ -232,6 +246,10 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
         })
 
         if (!res?.ok) {
+          if (routeMalError(res)) {
+            pushToast('Reconecta tu cuenta de MAL para sincronizar', 'error')
+            return
+          }
           set({ error: res?.error === 'not_found' ? 'Anime no encontrado.' : res?.error || 'No se pudo vincular.' })
           return
         }

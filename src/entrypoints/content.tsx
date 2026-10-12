@@ -6,7 +6,7 @@ import ToastHolder from '@/components/ToastHolder'
 import { pushToast } from '@/utils/toast-store'
 import { sendMessage } from './background'
 import '@/styles/tailwind.css'
-import { useAnimeStore } from '@/components/anime-card/useAnimeStore'
+import { routeMalError, useAnimeStore } from '@/components/anime-card/useAnimeStore'
 
 export default defineContentScript({
   matches: ['https://animeav1.com/*'],
@@ -16,8 +16,6 @@ export default defineContentScript({
   cssInjectionMode: 'ui',
 
   async main(ctx) {
-    ;(window as any).__malConnectorContentLoaded = true
-
     const MEDIA_PATH_REGEX = /^\/media\/([^/]+)(?:\/([^/]+))?/
     // No depender de la jerarquía de divs de AnimeAV1: cambia con frecuencia.
     const NAME_SELECTORS = ['main article header a[href^="/media/"]', 'main article header a', 'main header a[href^="/media/"]']
@@ -25,8 +23,6 @@ export default defineContentScript({
 
     let currentSlug: string | null = null
     let currentEpisode: number | null = null
-    let lastSentName: string | null = null
-    let lastSentSlug: string | null = null
     let lastKnownWatched: boolean | null = null
     let observedButton: Element | null = null
 
@@ -93,6 +89,8 @@ export default defineContentScript({
         position: 'inline',
         anchor: 'body > div > div > div:nth-child(2)',
         append: 'first',
+        isolateEvents: true,
+        mode: 'closed',
         onMount: (container, _, shadowHost) => {
           stopWatchingTheme = watchTheme(shadowHost)
           reactRoot = createRoot(container)
@@ -144,15 +142,8 @@ export default defineContentScript({
 
     // --- Detección del botón "visto" ----------------------------------------
 
-    function maybeSendNameUpdate() {
-      if (!currentSlug) return
-      const name = getAnimeName()
-      if (currentSlug !== lastSentSlug || (name && name !== lastSentName)) {
-        lastSentSlug = currentSlug
-        lastSentName = name
-        sendMessageSafe({ type: 'PAGE_CONTEXT', slug: currentSlug, name })
-      }
-      resolveForSlug(currentSlug)
+    function maybeResolve() {
+      if (currentSlug) resolveForSlug(currentSlug)
     }
 
     // Registra el estado actual del botón como línea base, sin depender de
@@ -204,6 +195,10 @@ export default defineContentScript({
           })
             .then(response => {
               if (!response.ok) {
+                if (routeMalError(response)) {
+                  pushToast('Reconecta tu cuenta de MAL para sincronizar', 'error')
+                  return
+                }
                 pushToast(`No se pudo actualizar el capítulo ${episode} en MAL`, 'error')
                 return
               }
@@ -253,6 +248,14 @@ export default defineContentScript({
       try {
         const store = useAnimeStore.getState()
 
+        const status = await sendMessage({ type: 'GET_MAL_STATUS' })
+        if (stale()) return
+        if (status.ok && !status.data.configured) {
+          resolvedSlug = slug // evita repetir esto en cada mutación del DOM
+          store.setAuthRequired()
+          return
+        }
+
         // 1) Enlace existente
         let id: number | null
         if (linkCache?.slug === slug) {
@@ -277,6 +280,7 @@ export default defineContentScript({
           store.setTitle(name)
           resolvedSlug = slug
           const result = await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
+          if (routeMalError(result)) return
           if (stale()) return
 
           id = result.ok ? result.data.id : null
@@ -300,6 +304,7 @@ export default defineContentScript({
 
         // 3) Detalles de MAL
         const res = await sendMessage({ type: 'GET_DETAILS', id })
+        if (routeMalError(res)) return
         if (stale()) return
         if (!res.ok || !res.data.details) {
           pushToast(`No se pudieron obtener los detalles de MAL para ${slug}`, 'error')
@@ -314,6 +319,15 @@ export default defineContentScript({
       }
     }
 
+    const unsubscribeReconnect = useAnimeStore.subscribe((state, prev) => {
+      if (state.reconnectNonce <= prev.reconnectNonce || !currentSlug) return
+      resolvedSlug = null
+      resolvingSlug = null
+      linkCache = null
+      void resolveForSlug(currentSlug)
+    })
+    ctx.onInvalidated(unsubscribeReconnect)
+
     // -------------------------------------------------------------------------
 
     function handleNavigation() {
@@ -322,12 +336,11 @@ export default defineContentScript({
       if (!parsed) {
         currentSlug = null
         currentEpisode = null
-        lastSentName = null
         observedButton = null
-        lastSentSlug = null
         resolvedSlug = null
         resolvingSlug = null
         linkCache = null
+        sendMessageSafe({ type: 'CLEAR_BADGE' })
         unmountCard()
         return
       }
@@ -338,9 +351,7 @@ export default defineContentScript({
       currentEpisode = parsed.episode
 
       if (slugChanged) {
-        lastSentName = null
         lastKnownWatched = null
-        lastSentSlug = null
         resolvedSlug = null
         resolvingSlug = null
         linkCache = null
@@ -354,7 +365,7 @@ export default defineContentScript({
       }
 
       mountCard() // no espera a nada más
-      maybeSendNameUpdate()
+      maybeResolve()
       syncButtonBaseline()
     }
 
@@ -365,7 +376,7 @@ export default defineContentScript({
         lastHref = window.location.href
         handleNavigation()
       } else {
-        maybeSendNameUpdate()
+        maybeResolve()
         syncButtonBaseline()
       }
     })
@@ -376,18 +387,5 @@ export default defineContentScript({
     })
 
     handleNavigation()
-
-    browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-      if (message.type === 'PING') {
-        sendResponse({ ok: true })
-        return
-      }
-    })
-
-    // Nota: ya no hace falta escuchar browser.storage.onChanged acá para
-    // refrescar la tarjeta — LinkedCard se suscribe a los cambios de
-    // storage.local por su cuenta (ver LinkedCard.tsx). Si el link cambia
-    // desde el popup mientras esta pestaña está abierta, el componente se
-    // actualiza solo.
   }
 })

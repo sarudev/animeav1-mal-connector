@@ -15,7 +15,8 @@ export default defineConfig({
     keepProfileChanges: true
   },
   manifest: {
-    permissions: ['storage', 'scripting', 'tabs'],
+    action: {},
+    permissions: ['storage'],
     host_permissions: ['https://myanimelist.net/*', 'https://api.myanimelist.net/*', 'https://animeav1.com/*']
   },
   vite: () => ({

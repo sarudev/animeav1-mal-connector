@@ -85,8 +85,12 @@ async function handleToggleWatched({
   return { ok: true, data: { status: result } }
 }
 
-async function setBadgeForTab(tabId: number | undefined | null, linked: boolean) {
+async function setBadgeForTab(tabId: number | undefined | null, linked: boolean | null) {
   if (tabId == null) return
+  if (linked == null) {
+    await browser.action.setBadgeText({ tabId, text: '' })
+    return
+  }
   await browser.action.setBadgeText({ tabId, text: linked ? 'OK' : '?' })
 
   await browser.action.setBadgeBackgroundColor({
@@ -114,9 +118,7 @@ async function autoLinkAnime(slug: string, name: string, tabId: number): Promise
   return { ok: true, data: { autoLinked: true, id: anime.id } }
 }
 
-export async function sendMessage(message: PAGE_CONTEXT): Promise<PAGE_CONTEXT_RESPONSE>
 export async function sendMessage(message: AUTO_LINK_ANIME): Promise<AUTO_LINK_ANIME_RESPONSE>
-export async function sendMessage(message: GET_TAB_CONTEXT): Promise<GET_TAB_CONTEXT_RESPONSE>
 export async function sendMessage(message: GET_LINK): Promise<GET_LINK_RESPONSE>
 export async function sendMessage(message: LINK_ANIME): Promise<LINK_ANIME_RESPONSE>
 export async function sendMessage(message: UNLINK_ANIME): Promise<UNLINK_ANIME_RESPONSE>
@@ -124,9 +126,10 @@ export async function sendMessage(message: SEARCH_ANIME): Promise<SEARCH_ANIME_R
 export async function sendMessage(message: GET_DETAILS): Promise<GET_DETAILS_RESPONSE>
 export async function sendMessage(message: UPDATE_SCORE): Promise<UPDATE_SCORE_RESPONSE>
 export async function sendMessage(message: TOGGLE_WATCHED): Promise<TOGGLE_WATCHED_RESPONSE>
-export async function sendMessage(message: TEST_MAL_CONNECTION): Promise<TEST_MAL_CONNECTION_RESPONSE>
-export async function sendMessage(message: SAVE_MAL_AUTH): Promise<SAVE_MAL_AUTH_RESPONSE>
 export async function sendMessage(message: GET_MAL_AUTH): Promise<GET_MAL_AUTH_RESPONSE>
+export async function sendMessage(message: CLEAR_BADGE): Promise<CLEAR_BADGE_RESPONSE>
+export async function sendMessage(message: GET_MAL_STATUS): Promise<GET_MAL_STATUS_RESPONSE>
+export async function sendMessage(message: CONNECT_MAL): Promise<CONNECT_MAL_RESPONSE>
 export async function sendMessage(message: Message): Promise<Response<unknown>> {
   return browser.runtime.sendMessage(message)
 }
@@ -137,20 +140,6 @@ export default defineBackground(() => {
       const { type } = message
       try {
         switch (type) {
-          case 'PAGE_CONTEXT': {
-            const { slug, name } = message
-            const tabId = sender.tab?.id
-            if (tabId == null) {
-              sendResponse({ ok: false, error: 'missing_context' } satisfies PAGE_CONTEXT_RESPONSE)
-              return
-            }
-            await setTabContext(tabId, { slug, name })
-            const id = await getId(slug)
-            await setBadgeForTab(tabId, id != null)
-            sendResponse({ ok: true, data: undefined } satisfies PAGE_CONTEXT_RESPONSE)
-            break
-          }
-
           case 'AUTO_LINK_ANIME': {
             const { slug, name } = message
             const tabId = sender.tab?.id
@@ -163,14 +152,6 @@ export default defineBackground(() => {
             break
           }
 
-          case 'GET_TAB_CONTEXT': {
-            const { tabId } = message
-            const context = await getTabContext(tabId)
-            const id = context ? await getId(context.slug) : null
-            sendResponse({ ok: true, data: { context, id } } satisfies GET_TAB_CONTEXT_RESPONSE)
-            break
-          }
-
           case 'GET_LINK': {
             const { slug } = message
             const id = await getId(slug)
@@ -179,14 +160,14 @@ export default defineBackground(() => {
           }
 
           case 'LINK_ANIME': {
-            const { slug, malId, tabId: msgTabId } = message
+            const { slug, malId } = message
             let { title, pictureUrl } = message
             if (!title || !pictureUrl) {
               try {
                 const details = await getAnimeDetails(malId)
                 title = title || details.title
                 pictureUrl = pictureUrl || details.main_picture?.medium || null
-              } catch {
+              } catch (err) {
                 if (!title) {
                   sendResponse({ ok: false, error: 'not_found' } satisfies LINK_ANIME_RESPONSE)
                   return
@@ -196,7 +177,7 @@ export default defineBackground(() => {
 
             await setId(slug, malId)
 
-            const tabId = sender.tab?.id ?? msgTabId
+            const tabId = sender.tab?.id
             await setBadgeForTab(tabId, true)
 
             sendResponse({ ok: true, data: { title, pictureUrl } } satisfies LINK_ANIME_RESPONSE)
@@ -204,9 +185,9 @@ export default defineBackground(() => {
           }
 
           case 'UNLINK_ANIME': {
-            const { slug, tabId: msgTabId } = message
+            const { slug } = message
             await removeId(slug)
-            const tabId = sender.tab?.id ?? msgTabId
+            const tabId = sender.tab?.id
             await setBadgeForTab(tabId, false)
             sendResponse({ ok: true, data: undefined } satisfies UNLINK_ANIME_RESPONSE)
             break
@@ -246,22 +227,43 @@ export default defineBackground(() => {
             break
           }
 
-          case 'TEST_MAL_CONNECTION': {
-            const user = await getCurrentUser()
-            sendResponse({ ok: true, data: { user } } satisfies TEST_MAL_CONNECTION_RESPONSE)
+          // case 'TEST_MAL_CONNECTION': {
+          //   const user = await getCurrentUser()
+          //   sendResponse({ ok: true, data: { user } } satisfies TEST_MAL_CONNECTION_RESPONSE)
+          //   break
+          // }
+
+          // case 'SAVE_MAL_AUTH': {
+          //   const { clientId, clientSecret, refreshToken } = message
+          //   await setMalAuth({ clientId, clientSecret, refreshToken })
+          //   sendResponse({ ok: true, data: undefined } satisfies SAVE_MAL_AUTH_RESPONSE)
+          //   break
+          // }
+
+          case 'CLEAR_BADGE': {
+            await setBadgeForTab(sender.tab?.id, null)
+            sendResponse({ ok: true, data: undefined } satisfies CLEAR_BADGE_RESPONSE)
             break
           }
 
-          case 'SAVE_MAL_AUTH': {
-            const { clientId, clientSecret, refreshToken } = message
-            await setMalAuth({ clientId, clientSecret, refreshToken })
-            sendResponse({ ok: true, data: undefined } satisfies SAVE_MAL_AUTH_RESPONSE)
+          case 'GET_MAL_STATUS': {
+            const a = await getMalAuth()
+            const configured = !!(a?.clientId && a.clientSecret && a.refreshToken)
+            sendResponse({ ok: true, data: { configured } } satisfies GET_MAL_STATUS_RESPONSE)
             break
           }
 
           case 'GET_MAL_AUTH': {
-            const auth = await getMalAuth()
+            const a = await getMalAuth()
+            const auth = a ? { clientId: a.clientId, clientSecret: a.clientSecret, refreshToken: a.refreshToken } : null
             sendResponse({ ok: true, data: { auth } } satisfies GET_MAL_AUTH_RESPONSE)
+            break
+          }
+
+          case 'CONNECT_MAL': {
+            const { clientId, clientSecret, refreshToken } = message
+            const user = await connectMal({ clientId, clientSecret, refreshToken })
+            sendResponse({ ok: true, data: { user } } satisfies CONNECT_MAL_RESPONSE)
             break
           }
 
@@ -269,14 +271,10 @@ export default defineBackground(() => {
             sendResponse({ ok: false, error: 'unknown_message_type' })
         }
       } catch (err) {
-        sendResponse({ ok: false, error: (err as Error).message })
+        sendResponse({ ok: false, error: err instanceof MalAuthError ? err.code : (err as Error).message })
       }
     })()
 
     return true
-  })
-
-  browser.tabs.onRemoved.addListener(tabId => {
-    removeTabContext(tabId)
   })
 })
