@@ -276,10 +276,7 @@ export default defineContentScript({
 
           store.setTitle(name)
           resolvedSlug = slug
-          const result = /* await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name }) */ {
-            ok: true,
-            data: { autoLinked: false, reason: 'no_exact_match', id: null }
-          }
+          const result = await sendMessage({ type: 'AUTO_LINK_ANIME', slug, name })
           if (stale()) return
 
           id = result.ok ? result.data.id : null
