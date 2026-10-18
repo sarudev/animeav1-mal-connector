@@ -1,8 +1,9 @@
 {
-  "name": "wxt-react-starter",
+  "name": "animeav1-mal-connector",
   "description": "manifest.json description",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "wxt  -b edge",

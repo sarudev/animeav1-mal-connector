@@ -24,6 +24,10 @@ export async function setMalAuth(auth: MalAuth): Promise<void> {
   await browser.storage.local.set({ [AUTH_KEY]: auth })
 }
 
+export async function clearMalAuth(): Promise<void> {
+  await browser.storage.local.remove(AUTH_KEY)
+}
+
 export async function getAnimeLinks(): Promise<AnimeLinks> {
   const data = await browser.storage.local.get(LINKS_KEY)
   return (data[LINKS_KEY] as AnimeLinks) || {}

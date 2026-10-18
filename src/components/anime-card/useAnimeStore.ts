@@ -34,11 +34,13 @@ interface AnimeStore extends AnimeStoreVars {
   setView: (view: View) => void
   openAuth: () => void
   setAuthRequired: () => void
+  setCredentialsCleared: () => void
   notifyReconnected: () => void
   setLoading: (loading: boolean) => void
   reset: () => void
   patch: (partial: Partial<AnimeStoreVars>) => void
   setDetails: (d: MalAnime) => void
+  setListStatus: (s: MalListStatus) => void
   setUnlinked: () => void
 }
 
@@ -76,6 +78,14 @@ export const useAnimeStore = create<AnimeStore>(set => ({
   setAuthRequired: () => set({ view: 'auth-form', authForced: true, loading: false }),
   notifyReconnected: () => set(s => ({ view: 'linked', authForced: false, loading: true, reconnectNonce: s.reconnectNonce + 1 })),
   setLoading: loading => set({ loading }),
+  setCredentialsCleared: () =>
+    set(state => ({
+      ...INITIAL,
+      slug: state.slug,
+      view: 'auth-form',
+      authForced: true,
+      loading: false
+    })),
   reset: () => set({ ...INITIAL }),
   patch: partial => set(partial),
   setDetails: d =>
@@ -87,6 +97,13 @@ export const useAnimeStore = create<AnimeStore>(set => ({
       watchedEpisodes: d.my_list_status?.num_episodes_watched ?? 0,
       totalEpisodes: d.num_episodes ?? 0,
       picture: d.main_picture?.medium ?? ''
+    }),
+  setListStatus: s =>
+    set({
+      status: s.status,
+      score: s.score,
+      lastConfirmedScore: s.score,
+      watchedEpisodes: s.num_episodes_watched
     }),
   setUnlinked: () =>
     set(state => ({

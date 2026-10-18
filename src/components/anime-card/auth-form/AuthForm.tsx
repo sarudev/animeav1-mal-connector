@@ -6,6 +6,7 @@ import Input from '@/components/Input'
 import { useAnimeStore } from '../useAnimeStore'
 import '@/styles/tailwind.css'
 import type { MalCredentials } from '@/utils/types'
+import { AuthFormActions } from './AuthFormActions'
 
 export default function AuthForm() {
   const authForced = useAnimeStore(s => s.authForced)
@@ -67,7 +68,15 @@ export default function AuthForm() {
   return (
     <div className='flex flex-col gap-2'>
       {!authForced && hasSaved && (
-        <Button label='Volver' icon={<ChevronLeft size={18} />} onClick={() => setView('linked')} className='self-start text-sm' type='border' />
+        <AuthFormActions
+          onCleared={() => {
+            setClientId('')
+            setClientSecret('')
+            setRefreshToken('')
+            setError('')
+            setHasSaved(false)
+          }}
+        />
       )}
       {authForced && <p className='text-sm text-fire'>Sin conexión con MAL: revisa tus credenciales.</p>}
 

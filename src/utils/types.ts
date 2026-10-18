@@ -64,6 +64,9 @@ export interface GET_MAL_AUTH {
 export interface CONNECT_MAL extends MalCredentials {
   type: 'CONNECT_MAL'
 }
+export interface CLEAR_MAL_AUTH {
+  type: 'CLEAR_MAL_AUTH'
+}
 
 export type Message =
   | AUTO_LINK_ANIME
@@ -78,6 +81,7 @@ export type Message =
   | GET_MAL_STATUS
   | GET_MAL_AUTH
   | CONNECT_MAL
+  | CLEAR_MAL_AUTH
 
 export type Response<T = undefined> = { ok: true; data: T } | { ok: false; error: string }
 
@@ -93,6 +97,7 @@ export type CLEAR_BADGE_RESPONSE = Response
 export type GET_MAL_STATUS_RESPONSE = Response<{ configured: boolean }>
 export type GET_MAL_AUTH_RESPONSE = Response<{ auth: MalCredentials | null }>
 export type CONNECT_MAL_RESPONSE = Response<{ user: MalUser | null }>
+export type CLEAR_MAL_AUTH_RESPONSE = Response
 
 const MAL_AUTH_ERRORS = ['mal_not_configured', 'mal_auth_failed']
 export function isMalAuthError(res: Response<unknown> | undefined): boolean {

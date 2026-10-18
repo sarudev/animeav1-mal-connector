@@ -1,4 +1,3 @@
-// Options.tsx
 import { KeyRound, Link } from 'lucide-react'
 import { useAnimeStore } from '../useAnimeStore'
 import { useScoreSync } from './useScoreSync'

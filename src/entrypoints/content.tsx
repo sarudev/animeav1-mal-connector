@@ -203,15 +203,19 @@ export default defineContentScript({
                 return
               }
 
+              if (response.data.skipped || !response.data.status) return
+
+              const store = useAnimeStore.getState()
+              const prevStatus = store.status
+              if (currentSlug === slug) store.setListStatus(response.data.status)
+
               if (!watched) {
-                const reopened = response.data.status?.status === 'watching'
+                const reopened = prevStatus === 'completed' && response.data.status.status === 'watching'
                 pushToast(`Capítulo ${episode} marcado como no visto${reopened ? '; anime vuelve a estar viendo' : ''}`)
                 return
               }
 
-              if (response.data.skipped) return
-
-              const completed = response.data.status?.status === 'completed'
+              const completed = response.data.status.status === 'completed'
               pushToast(`Capítulo ${episode} marcado como visto${completed ? '. Anime completado' : ''}`)
             })
             .catch(() => {

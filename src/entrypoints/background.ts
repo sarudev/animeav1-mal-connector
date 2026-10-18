@@ -41,7 +41,8 @@ function computeListUpdate(
       if (!cur?.start_date && !update.start_date) update.start_date = todayISO()
     }
   } else {
-    if (!cur || cur.status !== 'completed' || totalEpisodes <= 0 || episode < totalEpisodes) {
+    if (!cur || (cur.status === 'completed' && episode < totalEpisodes)) {
+      console.log(`returned null`, { cur, totalEpisodes, episode })
       return null
     }
 
@@ -130,6 +131,7 @@ export async function sendMessage(message: GET_MAL_AUTH): Promise<GET_MAL_AUTH_R
 export async function sendMessage(message: CLEAR_BADGE): Promise<CLEAR_BADGE_RESPONSE>
 export async function sendMessage(message: GET_MAL_STATUS): Promise<GET_MAL_STATUS_RESPONSE>
 export async function sendMessage(message: CONNECT_MAL): Promise<CONNECT_MAL_RESPONSE>
+export async function sendMessage(message: CLEAR_MAL_AUTH): Promise<CLEAR_MAL_AUTH_RESPONSE>
 export async function sendMessage(message: Message): Promise<Response<unknown>> {
   return browser.runtime.sendMessage(message)
 }
@@ -264,6 +266,12 @@ export default defineBackground(() => {
             const { clientId, clientSecret, refreshToken } = message
             const user = await connectMal({ clientId, clientSecret, refreshToken })
             sendResponse({ ok: true, data: { user } } satisfies CONNECT_MAL_RESPONSE)
+            break
+          }
+
+          case 'CLEAR_MAL_AUTH': {
+            await clearMalAuth()
+            sendResponse({ ok: true, data: undefined } satisfies CLEAR_MAL_AUTH_RESPONSE)
             break
           }
 
