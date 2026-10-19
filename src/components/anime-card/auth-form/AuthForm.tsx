@@ -1,57 +1,87 @@
-import { ChevronLeft, Plug } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Check, Copy, Plug } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { sendMessage } from '@/entrypoints/background'
 import Button from '@/components/Button'
 import Input from '@/components/Input'
 import { useAnimeStore } from '../useAnimeStore'
-import '@/styles/tailwind.css'
-import type { MalCredentials } from '@/utils/types'
 import { AuthFormActions } from './AuthFormActions'
+import '@/styles/tailwind.css'
+
+const GUIDE_URL = '#' // TODO: reemplazar por la URL de la guía
+const MAL_APICONFIG_URL = 'https://myanimelist.net/apiconfig'
 
 export default function AuthForm() {
-  const authForced = useAnimeStore(s => s.authForced)
-  const setView = useAnimeStore(s => s.setView)
-  const notifyReconnected = useAnimeStore(s => s.notifyReconnected)
+  const { authForced, notifyReconnected } = useAnimeStore()
 
+  const [redirectUrl, setRedirectUrl] = useState('')
+  const [copied, setCopied] = useState(false)
   const [clientId, setClientId] = useState('')
-  const [clientSecret, setClientSecret] = useState('')
-  const [refreshToken, setRefreshToken] = useState('')
   const [hasSaved, setHasSaved] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
 
+  const redirectRef = useRef<HTMLInputElement>(null)
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
   useEffect(() => {
     let cancelled = false
+
+    sendMessage({ type: 'GET_REDIRECT_URL' })
+      .then(res => {
+        if (!cancelled && res.ok) setRedirectUrl(res.data.url)
+      })
+      .catch(() => {})
+
     sendMessage({ type: 'GET_MAL_AUTH' })
       .then(res => {
         if (cancelled || !res.ok || !res.data.auth) return
         setClientId(res.data.auth.clientId)
-        setClientSecret(res.data.auth.clientSecret)
-        setRefreshToken(res.data.auth.refreshToken)
         setHasSaved(true)
       })
       .catch(() => {})
+
     return () => {
       cancelled = true
+      clearTimeout(copyTimer.current)
     }
   }, [])
 
-  async function connect() {
-    const creds: MalCredentials = {
-      clientId: clientId.trim(),
-      clientSecret: clientSecret.trim(),
-      refreshToken: refreshToken.trim()
+  async function copyRedirectUrl() {
+    if (!redirectUrl) return
+    try {
+      await navigator.clipboard.writeText(redirectUrl)
+    } catch {
+      redirectRef.current?.select()
+      document.execCommand('copy')
     }
-    if (!creds.clientId || !creds.clientSecret || !creds.refreshToken) {
-      setError('Completa los tres campos.')
+    setCopied(true)
+    clearTimeout(copyTimer.current)
+    copyTimer.current = setTimeout(() => setCopied(false), 1500)
+  }
+
+  function describeError(code: string): string {
+    switch (code) {
+      case 'mal_login_aborted':
+        return 'No se completó el inicio de sesión. Si MAL mostró un error, revisa que la URL de redirección esté registrada en tu app.'
+      case 'mal_auth_failed':
+        return 'MAL rechazó la autorización. Revisa el client id.'
+      default:
+        return code
+    }
+  }
+
+  async function connect() {
+    const id = clientId.trim()
+    if (!id) {
+      setError('Ingresa el client id de tu app.')
       return
     }
     setError('')
     setConnecting(true)
     try {
-      const res = await sendMessage({ type: 'CONNECT_MAL', ...creds })
+      const res = await sendMessage({ type: 'CONNECT_MAL', clientId: id })
       if (!res.ok) {
-        setError(res.error === 'mal_auth_failed' ? 'MAL rechazó las credenciales. Revisa el client id, el secret y el refresh token.' : res.error)
+        setError(describeError(res.error))
         return
       }
       pushToast(res.data.user ? `Conectado a MAL como ${res.data.user.name}` : 'Conectado a MAL')
@@ -71,29 +101,48 @@ export default function AuthForm() {
         <AuthFormActions
           onCleared={() => {
             setClientId('')
-            setClientSecret('')
-            setRefreshToken('')
             setError('')
             setHasSaved(false)
           }}
         />
       )}
-      {authForced && <p className='text-sm text-fire'>Sin conexión con MAL: revisa tus credenciales.</p>}
+      {authForced && <p className='text-sm text-fire'>Sin conexión con MAL: vuelve a conectar tu cuenta.</p>}
 
-      <Input label='MAL_CLIENT_ID' value={clientId} onChange={e => setClientId(e.target.value)} onKeyDown={onEnter} />
-      <Input label='MAL_CLIENT_SECRET' type='password' value={clientSecret} onChange={e => setClientSecret(e.target.value)} onKeyDown={onEnter} />
       <Input
-        label='MAL_REFRESH_TOKEN'
-        type='password'
-        value={refreshToken}
-        onChange={e => setRefreshToken(e.target.value)}
+        ref={redirectRef}
+        label='URL de redirección'
+        className='pr-10'
+        value={redirectUrl}
+        readOnly
+        placeholder='Cargando…'
+        trailing={<Button icon={copied ? <Check size={16} /> : <Copy size={16} />} disabled={!redirectUrl} onClick={copyRedirectUrl} />}
+        hint={
+          <>
+            Configuralo{' '}
+            <a className='text-main hover:underline' href={MAL_APICONFIG_URL} target='_blank' rel='noopener noreferrer'>
+              acá
+            </a>
+          </>
+        }
+      />
+
+      <Input
+        label='MAL_CLIENT_ID'
+        value={clientId}
+        onChange={e => setClientId(e.target.value)}
         onKeyDown={onEnter}
         error={error}
         hint={
           <>
-            Necesitas una app en{' '}
-            <a className='text-main hover:underline' href='https://myanimelist.net/apiconfig' target='_blank' rel='noopener noreferrer'>
-              myanimelist.net/apiconfig
+            ¿Primera vez?{' '}
+            <a
+              className='text-main hover:underline'
+              href={GUIDE_URL}
+              target='_blank'
+              rel='noopener noreferrer'
+              onClick={e => GUIDE_URL === '#' && e.preventDefault()}
+            >
+              Mira la guía
             </a>
           </>
         }
@@ -103,7 +152,7 @@ export default function AuthForm() {
         className='text-sm gap-1 px-2 relative'
         icon={<Plug size={20} />}
         iconPosition='right'
-        label={connecting ? 'Conectando…' : 'Conectar'}
+        label={connecting ? 'Conectando…' : 'Obtener credenciales'}
         type='border'
         disabled={connecting}
         onClick={connect}

@@ -2,7 +2,6 @@ import { defineConfig } from 'wxt'
 import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 
-// See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   srcDir: 'src',
@@ -14,11 +13,14 @@ export default defineConfig({
     chromiumProfile: resolve('./.wxt-profile'),
     keepProfileChanges: true
   },
-  manifest: {
+  manifest: ({ browser }) => ({
     action: {},
-    permissions: ['storage'],
-    host_permissions: ['https://myanimelist.net/*', 'https://api.myanimelist.net/*', 'https://animeav1.com/*']
-  },
+    permissions: ['storage', 'identity'],
+    host_permissions: ['https://myanimelist.net/*', 'https://api.myanimelist.net/*', 'https://animeav1.com/*'],
+    ...(browser === 'firefox' && {
+      browser_specific_settings: { gecko: { id: 'animeav1-mal-connector@sarudev' } }
+    })
+  }),
   vite: () => ({
     plugins: [tailwindcss()]
   })

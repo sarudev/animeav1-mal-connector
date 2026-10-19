@@ -17,7 +17,6 @@ export default function SearchResultsModal({ open, onClose, anchorRef, container
   const modalRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null)
 
-  // Posición debajo del input; se recalcula al hacer scroll o redimensionar.
   useLayoutEffect(() => {
     if (!open) return
     const update = () => {
@@ -33,10 +32,8 @@ export default function SearchResultsModal({ open, onClose, anchorRef, container
     }
   }, [open, anchorRef])
 
-  // Cerrar con Escape o al hacer click fuera.
   useEffect(() => {
     if (!open) return
-    // getRootNode() sí devuelve el ShadowRoot cerrado desde dentro
     const host = (container.getRootNode() as ShadowRoot).host
 
     const inside = (path: EventTarget[]) =>
@@ -53,7 +50,7 @@ export default function SearchResultsModal({ open, onClose, anchorRef, container
     }
 
     container.addEventListener('pointerdown', onInsidePointer)
-    container.addEventListener('keydown', onKeyDown) // en container: con isolateEvents el keydown ya no llega a document
+    container.addEventListener('keydown', onKeyDown)
     document.addEventListener('pointerdown', onOutsidePointer)
     return () => {
       container.removeEventListener('pointerdown', onInsidePointer)

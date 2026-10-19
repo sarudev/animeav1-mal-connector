@@ -10,14 +10,11 @@ import { routeMalError, useAnimeStore } from '@/components/anime-card/useAnimeSt
 
 export default defineContentScript({
   matches: ['https://animeav1.com/*'],
-  // Con autoMount() el DOM no tiene que estar listo. Si querés arrancar todavía
-  // antes, probá 'document_start' (verificá que nada asuma DOM ya renderizado).
   runAt: 'document_idle',
   cssInjectionMode: 'ui',
 
   async main(ctx) {
     const MEDIA_PATH_REGEX = /^\/media\/([^/]+)(?:\/([^/]+))?/
-    // No depender de la jerarquía de divs de AnimeAV1: cambia con frecuencia.
     const NAME_SELECTORS = ['main article header a[href^="/media/"]', 'main article header a', 'main header a[href^="/media/"]']
     const WATCH_BUTTON_SELECTOR = 'button:has(span.ic-eye), button:has(span.ic-eye-off)'
 
@@ -32,7 +29,6 @@ export default defineContentScript({
 
       const slug = match[1]!
       const episodeSegment = match[2]
-      // La extensión solo actúa en un episodio, no en /media/{name}.
       if (!/^\d+$/.test(episodeSegment || '')) return null
       const episode = parseInt(episodeSegment!, 10)
 
@@ -63,15 +59,10 @@ export default defineContentScript({
     function sendMessageSafe(message: Message) {
       try {
         browser.runtime.sendMessage(message)
-      } catch {
-        // El contexto de la extensión puede invalidarse (recarga/actualización);
-        // no hay nada útil que hacer aquí.
-      }
+      } catch {}
     }
 
     // --- UIs (React, en Shadow Root) ----------------------------------------
-    // Se crean una sola vez y en paralelo, al inicio. El montaje de la tarjeta
-    // no depende de la red: autoMount() espera al anchor y monta apenas aparece.
 
     let reactRoot: Root | null = null
     let stopWatchingTheme: (() => void) | null = null
@@ -146,10 +137,6 @@ export default defineContentScript({
       if (currentSlug) resolveForSlug(currentSlug)
     }
 
-    // Registra el estado actual del botón como línea base, sin depender de
-    // MutationObserver (SvelteKit suele reemplazar los nodos del ícono en vez
-    // de mutar su atributo class, lo que hace que un observer atado a la
-    // referencia vieja deje de funcionar tras el primer re-render).
     function syncButtonBaseline() {
       const button = getWatchButton()
       if (!button || button === observedButton) return
@@ -157,13 +144,8 @@ export default defineContentScript({
       lastKnownWatched = getWatchedStateFromButton(button)
     }
 
-    // Detecta el toggle reaccionando al clic (delegado y en fase de captura,
-    // para no depender de que el listener de Svelte no detenga la
-    // propagación). El cambio de clase puede tardar (animeav1 espera la
-    // respuesta del servidor antes de actualizar el ícono), así que se hace
-    // polling en vez de un único setTimeout fijo.
     const WATCH_POLL_INTERVAL_MS = 150
-    const WATCH_POLL_MAX_ATTEMPTS = 20 // ~3s en total
+    const WATCH_POLL_MAX_ATTEMPTS = 20
 
     function handleDocumentClick(event: MouseEvent) {
       const target = event.target as HTMLElement
@@ -240,8 +222,6 @@ export default defineContentScript({
 
     let resolvedSlug: string | null = null
     let resolvingSlug: string | null = null
-    // Cache del resultado de GET_LINK por slug, para no repetir la llamada cada
-    // vez que el observer reintenta mientras todavía no aparece el nombre.
     let linkCache: { slug: string; id: number | null } | null = null
 
     async function resolveForSlug(slug: string) {
@@ -255,12 +235,11 @@ export default defineContentScript({
         const status = await sendMessage({ type: 'GET_MAL_STATUS' })
         if (stale()) return
         if (status.ok && !status.data.configured) {
-          resolvedSlug = slug // evita repetir esto en cada mutación del DOM
+          resolvedSlug = slug
           store.setAuthRequired()
           return
         }
 
-        // 1) Enlace existente
         let id: number | null
         if (linkCache?.slug === slug) {
           id = linkCache.id
@@ -276,10 +255,9 @@ export default defineContentScript({
           linkCache = { slug, id }
         }
 
-        // 2) Si no hay enlace, intentar auto-vincular
         if (id == null) {
           const name = getAnimeName()
-          if (!name) return // el observer reintentará cuando aparezca el nombre
+          if (!name) return
 
           store.setTitle(name)
           resolvedSlug = slug
@@ -295,7 +273,6 @@ export default defineContentScript({
           }
 
           if (id == null) {
-            // Sin coincidencia: pasamos al formulario de vinculación.
             store.setId(null)
             store.setView('link-form')
             store.setLoading(false)
@@ -306,7 +283,6 @@ export default defineContentScript({
         resolvedSlug = slug
         store.setId(id)
 
-        // 3) Detalles de MAL
         const res = await sendMessage({ type: 'GET_DETAILS', id })
         if (routeMalError(res)) return
         if (stale()) return
@@ -361,19 +337,17 @@ export default defineContentScript({
         linkCache = null
         observedButton = null
 
-        // Store limpio ANTES de montar, así no se ve el anime anterior.
         const store = useAnimeStore.getState()
         store.reset()
         store.setSlug(parsed.slug)
         store.setLoading(true)
       }
 
-      mountCard() // no espera a nada más
+      mountCard()
       maybeResolve()
       syncButtonBaseline()
     }
 
-    // AnimeAv1 es una SPA: la URL puede cambiar sin recargar la página.
     let lastHref = window.location.href
     const rootObserver = new MutationObserver(() => {
       if (window.location.href !== lastHref) {

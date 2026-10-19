@@ -1,7 +1,6 @@
-// Cliente de la API de MyAnimeList (OAuth2 + endpoints de anime y lista de usuario).
 import { getMalAuth, setMalAuth, type MalAuth } from '@/utils/storage'
 
-const TOKEN_URL = 'https://myanimelist.net/v1/oauth2/token'
+export const TOKEN_URL = 'https://myanimelist.net/v1/oauth2/token'
 const API_BASE = 'https://api.myanimelist.net/v2'
 
 export interface MalUser {
@@ -29,7 +28,7 @@ export type AnimeResult = Omit<MalAnime, 'my_list_status'>
 
 export class MalAuthError extends Error {
   constructor(
-    public code: 'mal_not_configured' | 'mal_auth_failed',
+    public code: 'mal_not_configured' | 'mal_auth_failed' | 'mal_login_aborted',
     message: string
   ) {
     super(message)
@@ -38,12 +37,13 @@ export class MalAuthError extends Error {
 }
 
 async function doRefresh(auth: MalAuth): Promise<MalAuth> {
-  const body = new URLSearchParams({
+  const params: Record<string, string> = {
     grant_type: 'refresh_token',
     refresh_token: auth.refreshToken,
-    client_id: auth.clientId,
-    client_secret: auth.clientSecret
-  })
+    client_id: auth.clientId
+  }
+
+  const body = new URLSearchParams(params)
 
   const res = await fetch(TOKEN_URL, {
     method: 'POST',
@@ -54,12 +54,10 @@ async function doRefresh(auth: MalAuth): Promise<MalAuth> {
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     const msg = `No se pudo refrescar el token de MAL (${res.status}): ${text}`
-    // 400/401 = refresh token o client inválidos. 5xx/red siguen siendo Error normal.
     throw res.status === 400 || res.status === 401 ? new MalAuthError('mal_auth_failed', msg) : new Error(msg)
   }
 
   const data = await res.json()
-  // MAL rota el refresh_token en cada renovación: hay que persistir el nuevo.
   const updated: MalAuth = {
     ...auth,
     accessToken: data.access_token,
@@ -79,7 +77,7 @@ function refreshAccessToken(auth: MalAuth) {
 
 export async function getAccessToken(): Promise<string> {
   let auth = await getMalAuth()
-  if (!auth?.clientId || !auth.clientSecret || !auth.refreshToken) {
+  if (!auth?.clientId || !auth.refreshToken) {
     throw new MalAuthError('mal_not_configured', 'Faltan credenciales de MyAnimeList.')
   }
 
@@ -115,11 +113,6 @@ async function malFetch<T = any>(path: string, retry = true, options: RequestIni
 
   if (res.status === 204) return null as T
   return res.json()
-}
-
-export async function connectMal(creds: MalCredentials): Promise<MalUser | null> {
-  await doRefresh({ ...creds }) // valida y persiste el refresh token rotado; si falla, no se guarda nada
-  return getCurrentUser().catch(() => null) // las credenciales ya son válidas aunque esto falle
 }
 
 export async function getCurrentUser(): Promise<MalUser> {

@@ -1,4 +1,3 @@
-// useScoreSync.ts
 import { useEffect } from 'react'
 import useDebouncedEffect from '@/hooks/useDebouncedEffect'
 import { sendMessage } from '@/entrypoints/background'

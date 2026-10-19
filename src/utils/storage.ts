@@ -1,5 +1,3 @@
-// Almacenamiento local: credenciales de MAL y vínculos animeav1(slug) -> MAL(id).
-// Se usa browser.storage.local (no sync) para que las credenciales nunca salgan del dispositivo.
 import { browser } from 'wxt/browser'
 
 const AUTH_KEY = 'malAuth'
@@ -7,7 +5,6 @@ const LINKS_KEY = 'animeLinks'
 
 export interface MalAuth {
   clientId: string
-  clientSecret: string
   refreshToken: string
   accessToken?: string
   accessTokenExpiry?: number

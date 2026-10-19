@@ -5,7 +5,6 @@ import type { MalAnime } from '@/utils/mal'
 interface Props {
   anime: MalAnime
   container: HTMLElement
-  // Si no se pasa onSelect, se renderiza como preview (sin radio ni hover).
   selected?: boolean
   onSelect?: (anime: MalAnime) => void
   className?: string

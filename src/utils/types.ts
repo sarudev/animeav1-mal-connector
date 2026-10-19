@@ -1,7 +1,5 @@
 import type { MalAuth } from './storage'
 
-export type MalCredentials = Pick<MalAuth, 'clientId' | 'clientSecret' | 'refreshToken'>
-
 export interface AUTO_LINK_ANIME {
   type: 'AUTO_LINK_ANIME'
   slug: string
@@ -55,17 +53,26 @@ export interface TOGGLE_WATCHED {
 export interface CLEAR_BADGE {
   type: 'CLEAR_BADGE'
 }
+
 export interface GET_MAL_STATUS {
   type: 'GET_MAL_STATUS'
 }
+
 export interface GET_MAL_AUTH {
   type: 'GET_MAL_AUTH'
 }
-export interface CONNECT_MAL extends MalCredentials {
+
+export interface CONNECT_MAL {
   type: 'CONNECT_MAL'
+  clientId: string
 }
+
 export interface CLEAR_MAL_AUTH {
   type: 'CLEAR_MAL_AUTH'
+}
+
+export interface GET_REDIRECT_URL {
+  type: 'GET_REDIRECT_URL'
 }
 
 export type Message =
@@ -82,6 +89,7 @@ export type Message =
   | GET_MAL_AUTH
   | CONNECT_MAL
   | CLEAR_MAL_AUTH
+  | GET_REDIRECT_URL
 
 export type Response<T = undefined> = { ok: true; data: T } | { ok: false; error: string }
 
@@ -95,9 +103,10 @@ export type UPDATE_SCORE_RESPONSE = Response<{ status: MalListStatus }>
 export type TOGGLE_WATCHED_RESPONSE = Response<{ skipped?: boolean; status?: MalListStatus }>
 export type CLEAR_BADGE_RESPONSE = Response
 export type GET_MAL_STATUS_RESPONSE = Response<{ configured: boolean }>
-export type GET_MAL_AUTH_RESPONSE = Response<{ auth: MalCredentials | null }>
+export type GET_MAL_AUTH_RESPONSE = Response<{ auth: { clientId: string } | null }>
 export type CONNECT_MAL_RESPONSE = Response<{ user: MalUser | null }>
 export type CLEAR_MAL_AUTH_RESPONSE = Response
+export type GET_REDIRECT_URL_RESPONSE = Response<{ url: string }>
 
 const MAL_AUTH_ERRORS = ['mal_not_configured', 'mal_auth_failed']
 export function isMalAuthError(res: Response<unknown> | undefined): boolean {

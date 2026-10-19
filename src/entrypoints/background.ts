@@ -1,24 +1,7 @@
-// Service worker: enruta los mensajes de content scripts / popup / options
-// y aplica la lógica de sincronización con MyAnimeList.
 import type { MalListStatus } from '@/utils/mal'
 import type { Response } from '@/utils/types'
 import { browser } from 'wxt/browser'
 
-/**
- * Calcula los campos a enviar a MAL según el estado actual de la lista del
- * usuario y la acción realizada en animeav1 (marcar/desmarcar un capítulo).
- *
- * Reglas:
- * - Al marcar un capítulo como visto:
- *   - Si el anime no está en "watching", se cambia a "watching" y se pone
- *     start_date (si no tenía una).
- *   - Se actualiza num_watched_episodes al número de ese capítulo.
- *   - Si MAL conoce el total de episodios y el capítulo marcado es el
- *     último, se pasa a "completed" con finish_date.
- * - Al desmarcar un capítulo como visto, no se modifica MAL, excepto cuando
- *   es el último episodio de un anime "completed"; en ese caso vuelve a
- *   "watching" y el contador retrocede al episodio anterior.
- */
 function computeListUpdate(
   cur: MalListStatus | null,
   totalEpisodes: number,
@@ -132,6 +115,7 @@ export async function sendMessage(message: CLEAR_BADGE): Promise<CLEAR_BADGE_RES
 export async function sendMessage(message: GET_MAL_STATUS): Promise<GET_MAL_STATUS_RESPONSE>
 export async function sendMessage(message: CONNECT_MAL): Promise<CONNECT_MAL_RESPONSE>
 export async function sendMessage(message: CLEAR_MAL_AUTH): Promise<CLEAR_MAL_AUTH_RESPONSE>
+export async function sendMessage(message: GET_REDIRECT_URL): Promise<GET_REDIRECT_URL_RESPONSE>
 export async function sendMessage(message: Message): Promise<Response<unknown>> {
   return browser.runtime.sendMessage(message)
 }
@@ -229,19 +213,6 @@ export default defineBackground(() => {
             break
           }
 
-          // case 'TEST_MAL_CONNECTION': {
-          //   const user = await getCurrentUser()
-          //   sendResponse({ ok: true, data: { user } } satisfies TEST_MAL_CONNECTION_RESPONSE)
-          //   break
-          // }
-
-          // case 'SAVE_MAL_AUTH': {
-          //   const { clientId, clientSecret, refreshToken } = message
-          //   await setMalAuth({ clientId, clientSecret, refreshToken })
-          //   sendResponse({ ok: true, data: undefined } satisfies SAVE_MAL_AUTH_RESPONSE)
-          //   break
-          // }
-
           case 'CLEAR_BADGE': {
             await setBadgeForTab(sender.tab?.id, null)
             sendResponse({ ok: true, data: undefined } satisfies CLEAR_BADGE_RESPONSE)
@@ -250,21 +221,19 @@ export default defineBackground(() => {
 
           case 'GET_MAL_STATUS': {
             const a = await getMalAuth()
-            const configured = !!(a?.clientId && a.clientSecret && a.refreshToken)
+            const configured = !!(a?.clientId && a.refreshToken)
             sendResponse({ ok: true, data: { configured } } satisfies GET_MAL_STATUS_RESPONSE)
             break
           }
 
           case 'GET_MAL_AUTH': {
             const a = await getMalAuth()
-            const auth = a ? { clientId: a.clientId, clientSecret: a.clientSecret, refreshToken: a.refreshToken } : null
-            sendResponse({ ok: true, data: { auth } } satisfies GET_MAL_AUTH_RESPONSE)
+            sendResponse({ ok: true, data: { auth: a ? { clientId: a.clientId } : null } } satisfies GET_MAL_AUTH_RESPONSE)
             break
           }
 
           case 'CONNECT_MAL': {
-            const { clientId, clientSecret, refreshToken } = message
-            const user = await connectMal({ clientId, clientSecret, refreshToken })
+            const user = await connectMal(message.clientId)
             sendResponse({ ok: true, data: { user } } satisfies CONNECT_MAL_RESPONSE)
             break
           }
@@ -272,6 +241,11 @@ export default defineBackground(() => {
           case 'CLEAR_MAL_AUTH': {
             await clearMalAuth()
             sendResponse({ ok: true, data: undefined } satisfies CLEAR_MAL_AUTH_RESPONSE)
+            break
+          }
+
+          case 'GET_REDIRECT_URL': {
+            sendResponse({ ok: true, data: { url: browser.identity.getRedirectURL() } } satisfies GET_REDIRECT_URL_RESPONSE)
             break
           }
 
@@ -285,4 +259,47 @@ export default defineBackground(() => {
 
     return true
   })
+  ;(globalThis as any).__testAuth = async (clientId: string, sendRedirect = false) => {
+    const redirectUri = browser.identity.getRedirectURL()
+    const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(64))))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
+    const state = 'test123'
+
+    const params: Record<string, string> = {
+      response_type: 'code',
+      client_id: clientId,
+      code_challenge: verifier,
+      code_challenge_method: 'plain',
+      state
+    }
+    if (sendRedirect) params.redirect_uri = redirectUri
+
+    try {
+      const result = await browser.identity.launchWebAuthFlow({
+        url: `https://myanimelist.net/v1/oauth2/authorize?${new URLSearchParams(params)}`,
+        interactive: true
+      })
+      const q = new URL(result!).searchParams
+      console.log('[test] volvió a:', result!.split('?')[0])
+      console.log('[test] parámetros recibidos:', [...q.keys()])
+      console.log('[test] state coincide:', q.get('state') === state)
+
+      const code = q.get('code')
+      if (!code) return console.log('[test] sin code. error:', q.get('error'))
+
+      const body: Record<string, string> = { client_id: clientId, code, code_verifier: verifier, grant_type: 'authorization_code' }
+      if (sendRedirect) body.redirect_uri = redirectUri
+      const res = await fetch('https://myanimelist.net/v1/oauth2/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(body)
+      })
+      const data = await res.json().catch(() => ({}))
+      console.log('[test] canje:', res.status, Object.keys(data))
+    } catch (e) {
+      console.log('[test] falló:', (e as Error).message)
+    }
+  }
 })

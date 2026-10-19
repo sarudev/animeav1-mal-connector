@@ -1,4 +1,5 @@
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react'
+import { twMerge } from 'tailwind-merge'
 import '../styles/tailwind.css'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -11,7 +12,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { className = '', autoComplete = 'off', id, label, trailing, loading = false, loadingText = 'Buscando...', error, hint, ...props },
+  { className = '', autoComplete = 'off', id, label, trailing, loading = false, loadingText = 'Buscando...', error, hint, readOnly, ...props },
   ref
 ) {
   const generatedId = useId()
@@ -30,8 +31,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           ref={ref}
           id={inputId}
           autoComplete={autoComplete}
+          readOnly={readOnly}
           aria-invalid={error ? true : undefined}
-          className={`${className} text-subs min-h-10 w-full px-3 rounded-lg border ${error ? 'border-fire' : 'border-line/40'} bg-soft caret-subs placeholder:text-subs lg:text-sm focus:border-edge focus:bg-mute disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={twMerge(
+            'text-subs min-h-10 w-full px-3 rounded-lg border bg-soft placeholder:text-subs lg:text-sm disabled:opacity-50 disabled:cursor-not-allowed',
+            error ? 'border-fire' : 'border-line/40',
+            readOnly ? 'caret-transparent cursor-default text-subs/50' : 'caret-subs focus:border-edge focus:bg-mute',
+            className
+          )}
           {...props}
         />
         {trailing && <div className='absolute inset-y-0 right-1 flex items-center'>{trailing}</div>}

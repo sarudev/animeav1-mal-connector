@@ -35,25 +35,21 @@ interface LinkFormStateVars {
 }
 
 interface LinkFormState extends LinkFormStateVars {
-  // Entradas del usuario
   setSearchInput: (value: string) => void
   setError: (error: string) => void
   select: (anime: MalAnime) => void
   changeManualId: (value: string) => void
 
-  // Inicialización / sincronización
   autoSearchFromTitle: (slug: string, title: string) => void
   showLinked: (anime: LinkedSnapshot) => void
   restoreTitle: (title: string) => void
   startFromName: (name: string | null) => void
 
-  // Operaciones async
   runSearch: (query: string, autoSelect?: boolean) => Promise<void>
   runDebouncedSearch: () => Promise<void>
   fetchManual: () => Promise<void>
   confirm: () => Promise<void>
 
-  // Limpieza
   clearResults: () => void
   reset: () => void
 }
@@ -182,7 +178,6 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
       const shouldAutoSelect = autoSelectNext
       autoSelectNext = false
 
-      // Ya se buscó este texto directamente (por ejemplo, tras desvincular).
       if (searchInput.trim() === lastSearched) return
 
       await runSearch(searchInput, shouldAutoSelect)
@@ -190,7 +185,6 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
     fetchManual: async () => {
       const parsed = parseId(get().manualId)
 
-      // ID vacío/inválido, o ya tenemos ese anime (por ejemplo, vino de la lista de resultados).
       if (parsed == null || get().selectedResult?.id === parsed) {
         set({ manualLoading: false })
         return
@@ -201,7 +195,7 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
 
       try {
         const res = await sendMessage({ type: 'GET_DETAILS', id: parsed })
-        if (requestId !== manualRequestId) return // llegó una más nueva
+        if (requestId !== manualRequestId) return
 
         if (!res?.ok || !res.data.details) {
           if (routeMalError(res)) {
@@ -254,16 +248,14 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
           return
         }
 
-        // Recién ahora cambiamos de vista: si falló, el error sigue visible en el form.
         animeStore.setLoading(true)
         animeStore.setId(targetId)
-        animeStore.setView('linked') // desmonta LinkForm -> reset()
+        animeStore.setView('linked')
 
         const ok = await loadAnimeDetails(targetId)
         animeStore.setLoading(false)
 
         if (!ok) {
-          // El vínculo ya se guardó; mostramos lo mínimo que tenemos como respaldo.
           animeStore.setTitle(res.data.title ?? matchTitle ?? '')
           animeStore.setPicture(res.data.pictureUrl ?? matchPicture ?? '')
           pushToast('Vinculado, pero no se pudieron cargar tus datos de MAL', 'error')

@@ -19,18 +19,14 @@ interface LinkFormProps {
 export default function LinkForm({ container }: LinkFormProps) {
   useLinkFormEffects()
 
-  // Estado local: solo cosas de UI/DOM
   const [modalOpen, setModalOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Datos del anime (store de dominio)
   const { title, id } = useAnimeStore()
 
-  // Estado del formulario
   const { searchInput, searchResults, selectedResult, manualId, noResultsQuery, error, manualError, searchLoading, manualLoading, confirmLoading } =
     useLinkFormStore()
 
-  // Acciones (referencias estables, no provocan renders)
   const { setSearchInput, select, changeManualId, restoreTitle, startFromName, confirm } = useLinkFormStore()
 
   const trimmedManual = manualId.trim()
