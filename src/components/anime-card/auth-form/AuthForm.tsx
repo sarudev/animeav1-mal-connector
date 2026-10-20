@@ -127,7 +127,7 @@ export default function AuthForm() {
       />
 
       <Input
-        label='MAL_CLIENT_ID'
+        label='Client ID'
         value={clientId}
         onChange={e => setClientId(e.target.value)}
         onKeyDown={onEnter}
