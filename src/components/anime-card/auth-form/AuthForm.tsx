@@ -7,7 +7,7 @@ import { useAnimeStore } from '../useAnimeStore'
 import { AuthFormActions } from './AuthFormActions'
 import '@/styles/tailwind.css'
 
-const GUIDE_URL = '#' // TODO: reemplazar por la URL de la guía
+const GUIDE_URL = 'https://github.com/sarudev/animeav1-mal-connector#configuración-inicial'
 const MAL_APICONFIG_URL = 'https://myanimelist.net/apiconfig'
 
 export default function AuthForm() {
