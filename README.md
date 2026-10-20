@@ -22,7 +22,7 @@ Extensión de navegador que sincroniza automáticamente tu progreso de **animeav
 
 ## Instalación
  
-> La extensión todavía no está publicada en ninguna tienda. Se instala desde los archivos de la última [release](github.com/sarudev/animeav1-mal-connector/releases), disponible para **Chrome** (y navegadores basados en Chromium, como Edge o Brave) y para **Firefox**.
+> La extensión todavía no está publicada en ninguna tienda. Se instala desde los archivos de la última [release](https://github.com/sarudev/animeav1-mal-connector/releases), disponible para **Chrome** (y navegadores basados en Chromium, como Edge o Brave) y para **Firefox**.
  
 ### Chrome / Edge / Brave
  
