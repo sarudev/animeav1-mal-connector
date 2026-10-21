@@ -14,29 +14,39 @@ export default defineContentScript({
   cssInjectionMode: 'ui',
 
   async main(ctx) {
+    type PageKind = 'anime' | 'episode'
+
     const MEDIA_PATH_REGEX = /^\/media\/([^/]+)(?:\/([^/]+))?/
-    const NAME_SELECTORS = ['main article header a[href^="/media/"]', 'main article header a', 'main header a[href^="/media/"]']
+    const NAME_SELECTORS: Record<PageKind, string[]> = {
+      episode: ['main article header a[href^="/media/"]', 'main article header a', 'main header a[href^="/media/"]'],
+      anime: ['main article header h1']
+    }
     const WATCH_BUTTON_SELECTOR = 'button:has(span.ic-eye), button:has(span.ic-eye-off)'
+
+    const EPISODE_ANCHOR = 'body > div > div > div:nth-child(2)'
+    const ANIME_ANCHOR = 'body > div > div.container > main > article'
 
     let currentSlug: string | null = null
     let currentEpisode: number | null = null
+    let currentKind: PageKind | null = null
     let lastKnownWatched: boolean | null = null
     let observedButton: Element | null = null
 
-    function parseLocation() {
+    function parseLocation(): { kind: PageKind; slug: string; episode: number | null } | null {
       const match = MEDIA_PATH_REGEX.exec(window.location.pathname)
       if (!match) return null
 
       const slug = match[1]!
-      const episodeSegment = match[2]
-      if (!/^\d+$/.test(episodeSegment || '')) return null
-      const episode = parseInt(episodeSegment!, 10)
+      const segment = match[2]
+      if (segment == null) return { kind: 'anime', slug, episode: null }
+      if (!/^\d+$/.test(segment)) return null
 
-      return { slug, episode }
+      return { kind: 'episode', slug, episode: parseInt(segment, 10) }
     }
 
     function getAnimeName(): string | null {
-      for (const selector of NAME_SELECTORS) {
+      if (!currentKind) return null
+      for (const selector of NAME_SELECTORS[currentKind]) {
         const el = document.querySelector(selector)
         const name = el?.textContent?.trim()
         if (name) return name
@@ -67,7 +77,20 @@ export default defineContentScript({
     let reactRoot: Root | null = null
     let stopWatchingTheme: (() => void) | null = null
 
-    const [toastUi, cardUi] = await Promise.all([
+    function mountReact(container: HTMLElement, shadowHost: HTMLElement, isAnimeCard: boolean) {
+      stopWatchingTheme = watchTheme(shadowHost)
+      reactRoot = createRoot(container)
+      reactRoot.render(<AnimeCard container={container} isAnimeCard={isAnimeCard} />)
+    }
+
+    function unmountReact() {
+      stopWatchingTheme?.()
+      stopWatchingTheme = null
+      reactRoot?.unmount()
+      reactRoot = null
+    }
+
+    const [toastUi, episodeCardUi, animeCardUi] = await Promise.all([
       createShadowRootUi(ctx, {
         name: 'mal-toast-holder',
         position: 'overlay',
@@ -78,26 +101,30 @@ export default defineContentScript({
       createShadowRootUi(ctx, {
         name: 'mal-linked-view',
         position: 'inline',
-        anchor: 'body > div > div > div:nth-child(2)',
+        anchor: EPISODE_ANCHOR,
         append: 'first',
         isolateEvents: true,
         mode: 'closed',
-        onMount: (container, _, shadowHost) => {
-          stopWatchingTheme = watchTheme(shadowHost)
-          reactRoot = createRoot(container)
-          reactRoot.render(<AnimeCard container={container} />)
-        },
-        onRemove: () => {
-          stopWatchingTheme?.()
-          stopWatchingTheme = null
-          reactRoot?.unmount()
-          reactRoot = null
-        }
+        onMount: (container, _, shadowHost) => mountReact(container, shadowHost, false),
+        onRemove: unmountReact
+      }),
+      createShadowRootUi(ctx, {
+        name: 'mal-anime-card',
+        position: 'inline',
+        anchor: ANIME_ANCHOR,
+        append: 'after',
+        isolateEvents: true,
+        mode: 'closed',
+        onMount: (container, _, shadowHost) => mountReact(container, shadowHost, true),
+        onRemove: unmountReact
       })
     ])
     toastUi.mount()
 
+    const cardUis = { episode: episodeCardUi, anime: animeCardUi }
+
     let cardActive = false
+    let activeKind: PageKind | null = null
 
     function whenHydrated(): Promise<void> {
       return new Promise(resolve => {
@@ -117,18 +144,22 @@ export default defineContentScript({
 
     const hydrated = whenHydrated()
 
-    async function mountCard() {
-      if (cardActive) return
+    async function mountCard(kind: PageKind) {
+      if (cardActive && activeKind === kind) return
+      if (cardActive) unmountCard()
       cardActive = true
+      activeKind = kind
       await hydrated
-      if (!cardActive) return
-      cardUi.autoMount()
+      if (!cardActive || activeKind !== kind) return
+      cardUis[kind].autoMount()
     }
 
     function unmountCard() {
-      if (!cardActive) return
+      if (!cardActive || !activeKind) return
+      const kind = activeKind
       cardActive = false
-      cardUi.remove()
+      activeKind = null
+      cardUis[kind].remove()
     }
 
     // --- Detección del botón "visto" ----------------------------------------
@@ -148,6 +179,8 @@ export default defineContentScript({
     const WATCH_POLL_MAX_ATTEMPTS = 20
 
     function handleDocumentClick(event: MouseEvent) {
+      if (currentEpisode == null) return
+
       const target = event.target as HTMLElement
       const clickedButton = target.closest(WATCH_BUTTON_SELECTOR)
       if (!clickedButton) return
@@ -166,7 +199,7 @@ export default defineContentScript({
           lastKnownWatched = watched
           observedButton = freshButton
 
-          if (slug == null || episode == null) return
+          if (slug == null) return
 
           console.log({ slug, episode, baselineWatched, attempts })
           void sendMessage({
@@ -316,6 +349,7 @@ export default defineContentScript({
       if (!parsed) {
         currentSlug = null
         currentEpisode = null
+        currentKind = null
         observedButton = null
         resolvedSlug = null
         resolvingSlug = null
@@ -329,6 +363,7 @@ export default defineContentScript({
 
       currentSlug = parsed.slug
       currentEpisode = parsed.episode
+      currentKind = parsed.kind
 
       if (slugChanged) {
         lastKnownWatched = null
@@ -343,7 +378,7 @@ export default defineContentScript({
         store.setLoading(true)
       }
 
-      mountCard()
+      mountCard(parsed.kind)
       maybeResolve()
       syncButtonBaseline()
     }

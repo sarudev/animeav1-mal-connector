@@ -7,13 +7,14 @@ import '@/styles/tailwind.css'
 
 export interface Props {
   container: HTMLElement
+  isAnimeCard: boolean
 }
 
-export default function AnimeCard({ container }: Props) {
+export default function AnimeCard({ container, isAnimeCard }: Props) {
   const view = useAnimeStore(s => s.view)
 
   return (
-    <div className='relative rounded mb-2 flex flex-col gap-2'>
+    <div className={`relative rounded flex flex-col gap-2 ${isAnimeCard ? 'anime-card' : ''}`}>
       <Card className='flex flex-col gap-4'>
         {view === 'linked' && <LinkedCard />}
         {view === 'link-form' && <LinkForm container={container} />}

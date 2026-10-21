@@ -135,13 +135,7 @@ export default function AuthForm() {
         hint={
           <>
             ¿Primera vez?{' '}
-            <a
-              className='text-main hover:underline'
-              href={GUIDE_URL}
-              target='_blank'
-              rel='noopener noreferrer'
-              onClick={e => GUIDE_URL === '#' && e.preventDefault()}
-            >
+            <a className='text-main hover:underline' href={GUIDE_URL} target='_blank' rel='noopener noreferrer'>
               Mira la guía
             </a>
           </>
