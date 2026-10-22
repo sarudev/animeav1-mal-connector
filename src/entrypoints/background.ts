@@ -71,13 +71,16 @@ async function handleToggleWatched({
 
 async function setBadgeForTab(tabId: number | undefined | null, linked: boolean | null) {
   if (tabId == null) return
+
+  const actionApi = (browser as any).action ?? (browser as any).browserAction
+  if (!actionApi) return
+
   if (linked == null) {
-    await browser.action.setBadgeText({ tabId, text: '' })
+    await actionApi.setBadgeText({ tabId, text: '' })
     return
   }
-  await browser.action.setBadgeText({ tabId, text: linked ? 'OK' : '?' })
-
-  await browser.action.setBadgeBackgroundColor({
+  await actionApi.setBadgeText({ tabId, text: linked ? 'OK' : '?' })
+  await actionApi.setBadgeBackgroundColor({
     tabId,
     color: linked ? '#2e7d32' : '#c62828'
   })

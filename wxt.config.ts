@@ -7,7 +7,8 @@ export default defineConfig({
   srcDir: 'src',
   webExt: {
     binaries: {
-      edge: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'
+      edge: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+      firefox: 'C:/Program Files/Mozilla Firefox/firefox.exe'
     },
     startUrls: ['https://animeav1.com/media/tensei-goblin-dakedo-shitsumon-aru/2'],
     chromiumProfile: resolve('./.wxt-profile'),

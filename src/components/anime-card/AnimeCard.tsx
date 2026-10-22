@@ -14,7 +14,7 @@ export default function AnimeCard({ container, isAnimeCard }: Props) {
   const view = useAnimeStore(s => s.view)
 
   return (
-    <div className={`relative rounded flex flex-col gap-2 ${isAnimeCard ? 'anime-card' : ''}`}>
+    <div className={`relative rounded flex flex-col gap-2 ${isAnimeCard ? '' : 'mb-2'}`}>
       <Card className='flex flex-col gap-4'>
         {view === 'linked' && <LinkedCard />}
         {view === 'link-form' && <LinkForm container={container} />}
