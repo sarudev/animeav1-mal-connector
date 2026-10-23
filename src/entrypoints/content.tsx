@@ -7,6 +7,7 @@ import { pushToast } from '@/utils/toast-store'
 import { sendMessage } from './background'
 import '@/styles/tailwind.css'
 import { routeMalError, useAnimeStore } from '@/components/anime-card/useAnimeStore'
+import AnimeStrip from '@/components/anime-strip/AnimeStrip'
 
 export default defineContentScript({
   matches: ['https://animeav1.com/*'],
@@ -77,10 +78,10 @@ export default defineContentScript({
     let reactRoot: Root | null = null
     let stopWatchingTheme: (() => void) | null = null
 
-    function mountReact(container: HTMLElement, shadowHost: HTMLElement, isAnimeCard: boolean) {
+    function mountReact(container: HTMLElement, shadowHost: HTMLElement, kind: PageKind) {
       stopWatchingTheme = watchTheme(shadowHost)
       reactRoot = createRoot(container)
-      reactRoot.render(<AnimeCard container={container} isAnimeCard={isAnimeCard} />)
+      reactRoot.render(kind === 'anime' ? <AnimeStrip container={container} /> : <AnimeCard container={container} />)
     }
 
     function unmountReact() {
@@ -105,7 +106,7 @@ export default defineContentScript({
         append: 'first',
         isolateEvents: true,
         mode: 'closed',
-        onMount: (container, _, shadowHost) => mountReact(container, shadowHost, false),
+        onMount: (container, _, shadowHost) => mountReact(container, shadowHost, 'episode'),
         onRemove: unmountReact
       }),
       createShadowRootUi(ctx, {
@@ -115,7 +116,7 @@ export default defineContentScript({
         append: 'after',
         isolateEvents: true,
         mode: 'closed',
-        onMount: (container, _, shadowHost) => mountReact(container, shadowHost, true),
+        onMount: (container, _, shadowHost) => mountReact(container, shadowHost, 'anime'),
         onRemove: unmountReact
       })
     ])

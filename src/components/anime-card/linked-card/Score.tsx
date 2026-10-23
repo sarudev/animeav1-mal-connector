@@ -2,21 +2,23 @@ import { useEffect, useState } from 'react'
 import Slider from '../../Slider'
 import { Star } from 'lucide-react'
 import { COLORS } from '../useAnimeStore'
+import { useWidthBetween } from '@/hooks/useWidthBetween'
 
 interface ScoreProps {
   score: number
   setScore: (score: number) => void
+  horizontal: boolean
 }
 
-export default function Score({ score, setScore }: ScoreProps) {
+export default function Score({ score, setScore, horizontal }: ScoreProps) {
   const [displayScore, setDisplayScore] = useState(score)
+  const useColStyle = useWidthBetween({ max: 768 })
 
   useEffect(() => setDisplayScore(score), [score])
 
   return (
     <>
-      <hr className='text-line -mx-4' />
-      <Badge show={score === 0} className='w-full'>
+      <Badge show={score === 0} className={`${horizontal ? 'grow-2' : 'w-full'}`}>
         <div className='text-subs'>
           <div className='flex justify-between'>
             <span>Puntuacion</span>

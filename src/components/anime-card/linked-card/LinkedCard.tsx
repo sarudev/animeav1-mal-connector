@@ -12,7 +12,7 @@ export default function LinkedCard() {
         <Picture />
         <Info />
       </div>
-      {showOptions && <Options />}
+      {showOptions && <Options design='card' />}
     </>
   )
 }
