@@ -80,10 +80,10 @@ function padDate(d: string): string {
 }
 
 // Una fecha parcial coincide con cualquier fecha completa que empiece igual (lo que AnimeAV1 autocompleta).
-// AnimeAV1 no admite fechas vacías, así que una fecha vacía tampoco se considera diferencia: solo falta completarla.
+// Una fecha vacía frente a una con valor sí es una diferencia.
 export function datesMatch(a: string, b: string): boolean {
   if (a === b) return true
-  if (!a || !b) return true
+  if (!a || !b) return false
   if (isPartialDate(a) && !isPartialDate(b)) return b.startsWith(a)
   if (isPartialDate(b) && !isPartialDate(a)) return a.startsWith(b)
   return false
@@ -189,18 +189,17 @@ export interface SiteExtra {
 
 // `private` se reenvía porque el form completo lo incluye; sin él, un guardado podría resetearlo.
 // Una casilla desmarcada no viaja en un form, así que solo se envía cuando es true.
-// AnimeAV1 rechaza fechas vacías (el error ni siquiera está sanitizado): si falta una se conserva la que ya tenía
-// (`current`), y si tampoco hay, el campo se omite.
+// Una fecha vacía se envía como cadena vacía solo si el sitio tiene una que borrar; si no hay nada, el campo se omite.
 export function snapshotToSiteFields(s: ListSnapshot, extra: SiteExtra, current: ListSnapshot | null = null): Record<string, string> {
   const fields: Record<string, string> = {
     status: MAL_TO_SITE[s.status],
     episode: String(s.episodes),
     notes: extra.notes
   }
-  const startDate = padDate(s.startDate || current?.startDate || '')
-  const endDate = padDate(s.endDate || current?.endDate || '')
-  if (startDate) fields.startDate = startDate
-  if (endDate) fields.endDate = endDate
+  const startDate = padDate(s.startDate)
+  const endDate = padDate(s.endDate)
+  if (startDate || current?.startDate) fields.startDate = startDate
+  if (endDate || current?.endDate) fields.endDate = endDate
   const rating = toSiteRating(s.score)
   if (rating > 0) fields.rating = String(rating)
   if (extra.private) fields.private = 'true'

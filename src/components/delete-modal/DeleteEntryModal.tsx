@@ -41,7 +41,7 @@ export default function DeleteEntryModal() {
       if (!res.ok) throw new Error(res.error)
 
       const library = await fetchSiteLibrary(t.slug, { fresh: true })
-      if (library?.entry) await deleteSiteEntry(library.mediaId)
+      if (library?.entry) await deleteSiteEntry(library.mediaId, library.entry)
 
       if (useAnimeStore.getState().slug === t.slug) useAnimeStore.getState().setListCleared()
       close()

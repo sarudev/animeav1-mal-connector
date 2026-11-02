@@ -1,4 +1,5 @@
 import { SITE } from './site-contract'
+import { siteToSnapshot, snapshotToSiteFields } from './list-sync'
 
 export interface SiteListEntry {
   status: number
@@ -86,7 +87,18 @@ async function requestSiteLibrary(slug: string): Promise<SiteLibrary | null> {
 }
 
 // Elimina la entrada del usuario (status -1, igual que "Eliminar de lista" del dropdown del sitio).
-export async function deleteSiteEntry(mediaId: number): Promise<void> {
+// La nota vive aparte de la entrada y sobrevive al borrado, así que si tenía una se limpia antes de eliminar;
+// si no, reaparecería al volver a agregar el anime y generaría una diferencia con MAL.
+export async function deleteSiteEntry(mediaId: number, entry?: SiteListEntry | null): Promise<void> {
+  if (entry?.rating) {
+    const snapshot = siteToSnapshot(entry)
+    if (snapshot) {
+      await saveSiteListEntry(
+        mediaId,
+        snapshotToSiteFields({ ...snapshot, score: 0 }, { notes: entry.notes ?? '', private: entry.private }, snapshot)
+      )
+    }
+  }
   cache.clear()
   const res = await fetch(SITE.libraryApiPath, {
     method: 'POST',

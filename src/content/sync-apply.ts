@@ -12,7 +12,7 @@ import {
   type Side
 } from '@/utils/list-sync'
 import { opKey, startOperation } from '@/utils/operations'
-import { deleteSiteEntry, saveSiteListEntry } from '@/utils/site-library'
+import { deleteSiteEntry, fetchSiteLibrary, saveSiteListEntry } from '@/utils/site-library'
 import { reloadNow } from '@/utils/site-ui'
 import { pushToast } from '@/utils/toast-store'
 
@@ -27,7 +27,8 @@ interface ApplyOptions {
 // Aplica la resolución de una discrepancia en ambos sitios. Lanza si algo falla.
 export async function applySync(c: SyncConflict, { choice, emptyPick = null, message = 'Listas sincronizadas' }: ApplyOptions) {
   if (emptyPick === 'mal') {
-    await deleteSiteEntry(c.siteMediaId)
+    const library = await fetchSiteLibrary(c.slug, { fresh: true })
+    await deleteSiteEntry(c.siteMediaId, library?.entry)
     reloadNow('Anime eliminado de AnimeAV1')
     return
   }
