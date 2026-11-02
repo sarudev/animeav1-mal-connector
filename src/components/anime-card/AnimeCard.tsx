@@ -2,6 +2,7 @@ import Card from '../Card'
 import LinkedCard from './linked-card/LinkedCard'
 import LinkForm from './link-form/LinkForm'
 import AuthForm from './auth-form/AuthForm'
+import SyncPolicyView from './SyncPolicyView'
 import { useAnimeStore } from './useAnimeStore'
 import '@/styles/tailwind.css'
 
@@ -18,6 +19,7 @@ export default function AnimeCard({ container }: Props) {
         {view === 'linked' && <LinkedCard />}
         {view === 'link-form' && <LinkForm container={container} />}
         {view === 'auth-form' && <AuthForm />}
+        {view === 'sync-policy' && <SyncPolicyView />}
       </Card>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { KeyRound, Link, Trash2 } from 'lucide-react'
+import { KeyRound, Link, RefreshCw, Trash2 } from 'lucide-react'
 import { useAnimeStore } from '../useAnimeStore'
 import { fetchSiteLibrary } from '@/utils/site-library'
 import { useDeleteStore } from '@/components/delete-modal/useDeleteStore'
@@ -56,6 +56,14 @@ export default function Options({ design }: OptionsProps) {
             label='Cambiar vinculo'
             type='border'
             onClick={() => setView('link-form')}
+          />
+          <Button
+            className={`text-sm gap-1 px-2 relative ${horizontal ? 'shrink-0' : 'grow'}`}
+            icon={<RefreshCw size={20} />}
+            iconPosition='right'
+            label='Sincronización'
+            type='border'
+            onClick={() => setView('sync-policy')}
           />
           <Button
             className={`text-sm gap-1 px-2 relative ${horizontal ? 'shrink-0' : 'grow'}`}

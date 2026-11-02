@@ -2,6 +2,7 @@ import { sendMessage } from '@/entrypoints/background'
 import { routeMalError, useAnimeStore } from '@/components/anime-card/useAnimeStore'
 import { normalizeCompleted, siteToSnapshot, snapshotToMalUpdate } from '@/utils/list-sync'
 import { logger } from '@/utils/logger'
+import { confirmLink } from '@/utils/link-confirm'
 import { opKey, startOperation } from '@/utils/operations'
 import type { MalListUpdate } from '@/utils/mal'
 import { SITE } from '@/utils/site-contract'
@@ -97,6 +98,7 @@ async function pushFormToMal(form: HTMLFormElement) {
       return
     }
     if (!res.ok) throw new Error(res.error)
+    void confirmLink(slug, id)
     if (page.slug === slug && isLatest()) useAnimeStore.getState().setListStatus(res.data.status)
     pushToast('Lista de MAL actualizada')
   } catch (e) {

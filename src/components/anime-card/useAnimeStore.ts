@@ -1,7 +1,7 @@
 import type { Response } from '@/utils/types'
 import { create } from 'zustand'
 
-type View = 'linked' | 'link-form' | 'auth-form'
+type View = 'linked' | 'link-form' | 'auth-form' | 'sync-policy'
 
 interface AnimeStoreVars {
   slug: string

@@ -1,6 +1,7 @@
 import { sendMessage } from '@/entrypoints/background'
 import { routeMalError, useAnimeStore } from '@/components/anime-card/useAnimeStore'
 import { logger } from '@/utils/logger'
+import { confirmLink } from '@/utils/link-confirm'
 import { opKey, startOperation } from '@/utils/operations'
 import { SITE } from '@/utils/site-contract'
 import { pushToast } from '@/utils/toast-store'
@@ -55,6 +56,7 @@ async function pushWatched(slug: string, episode: number, watched: boolean) {
     if (response.data.skipped || !response.data.status) return
 
     const store = useAnimeStore.getState()
+    void confirmLink(slug, store.slug === slug ? store.id : null)
     const prevStatus = store.status
     if (page.slug === slug && isLatest()) store.setListStatus(response.data.status)
 

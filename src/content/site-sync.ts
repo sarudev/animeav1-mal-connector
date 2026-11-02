@@ -2,6 +2,7 @@ import { sendMessage } from '@/entrypoints/background'
 import { routeMalError, useAnimeStore } from '@/components/anime-card/useAnimeStore'
 import { reopenIfIncomplete, siteToSnapshot, snapshotsDiffer, snapshotToMalUpdate, snapshotToSiteFields } from '@/utils/list-sync'
 import { logger } from '@/utils/logger'
+import { confirmLink } from '@/utils/link-confirm'
 import { opKey, startOperation } from '@/utils/operations'
 import { SITE } from '@/utils/site-contract'
 import { fetchSiteLibrary, saveSiteListEntry } from '@/utils/site-library'
@@ -59,6 +60,7 @@ export async function reconcileSiteToMal(slug: string, expectStatus?: number) {
     ])
     if (routeMalError(res)) return
     if (!res.ok) throw new Error(res.error)
+    void confirmLink(slug, id)
     if (page.slug === slug && isLatest()) useAnimeStore.getState().setListStatus(res.data.status)
 
     if (reopened) {

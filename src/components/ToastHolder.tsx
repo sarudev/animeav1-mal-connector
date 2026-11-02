@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { subscribeToasts, type ToastItem } from '@/utils/toast-store'
+import { removeToast, subscribeToasts, type ToastItem } from '@/utils/toast-store'
 import Toast from './Toast'
 
 export default function ToastHolder() {
@@ -15,7 +15,7 @@ export default function ToastHolder() {
         }
       `}</style>
       {toasts.map(t => (
-        <Toast key={t.id} message={t.message} variant={t.variant} duration={t.duration} />
+        <Toast key={t.id} message={t.message} variant={t.variant} duration={t.duration} onClose={() => removeToast(t.id)} />
       ))}
     </div>
   )

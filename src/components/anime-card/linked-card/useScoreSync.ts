@@ -3,6 +3,7 @@ import useDebouncedEffect from '@/hooks/useDebouncedEffect'
 import { sendMessage } from '@/entrypoints/background'
 import { syncSiteScore } from '@/utils/site-score'
 import { logger } from '@/utils/logger'
+import { confirmLink } from '@/utils/link-confirm'
 import { useAnimeStore } from '../useAnimeStore'
 
 export function useScoreSync() {
@@ -17,12 +18,12 @@ export function useScoreSync() {
     const { loading, id, slug, status, lastConfirmedScore, setScore, setLastConfirmedScore } = useAnimeStore.getState()
 
     if (loading || id == null) return
-    if (lastConfirmedScore === 0) return
     if (newScore === lastConfirmedScore) return
     if (status == null || status === 'plan_to_watch') return
 
     const res = await sendMessage({ type: 'UPDATE_SCORE', id, score: newScore, slug })
     if (res?.ok) {
+      void confirmLink(slug, id)
       setLastConfirmedScore(newScore)
       pushToast('Puntuación actualizada')
       syncSiteScore(slug, newScore).catch(e => {

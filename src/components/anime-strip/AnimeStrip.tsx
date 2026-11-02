@@ -8,6 +8,7 @@ import { COLORS, useAnimeStore } from '../anime-card/useAnimeStore'
 import Options from '../anime-card/linked-card/Options'
 import LinkForm from '../anime-card/link-form/LinkForm'
 import AuthForm from '../anime-card/auth-form/AuthForm'
+import SyncPolicyView from '../anime-card/SyncPolicyView'
 import '@/styles/tailwind.css'
 import Status from '../anime-card/linked-card/Status'
 
@@ -35,6 +36,11 @@ export default function AnimeStrip({ container }: Props) {
       {view === 'auth-form' && (
         <div className='mx-auto w-full max-w-md'>
           <AuthForm />
+        </div>
+      )}
+      {view === 'sync-policy' && (
+        <div className='mx-auto w-full max-w-md'>
+          <SyncPolicyView />
         </div>
       )}
     </Card>

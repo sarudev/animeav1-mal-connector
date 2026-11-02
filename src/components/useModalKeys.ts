@@ -24,6 +24,9 @@ export function useModalKeys(
       const current = root.activeElement
       const focused = current instanceof HTMLElement && dialog.contains(current) ? current : null
       const buttons = [...dialog.querySelectorAll<HTMLElement>('button:not(:disabled)')]
+      // Escribiendo en un campo (p. ej. los días) las teclas son del campo, no atajos del diálogo.
+      if (focused instanceof HTMLInputElement && e.key !== 'Tab') return
+
       const stop = () => {
         e.preventDefault()
         e.stopPropagation()

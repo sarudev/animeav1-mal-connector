@@ -126,6 +126,22 @@ Cuando el anime ya está vinculado y los datos de MAL y de AnimeAV1 son distinto
 - Las notas del formulario del sitio no forman parte de esta comparación.
 - **Teclado**: el modal se puede usar sin mouse. Las flechas te mueven entre datos, `Enter` o `Espacio` eligen, `1` elige toda la lista de MAL, `2` toda la de AnimeAV1 y `Ctrl+Enter` continúa. `Tab` no sale del modal.
 
+### Preferencia de resolución de diferencias
+
+Si no quieres que te pregunte cada vez, puedes elegir cómo resolver las diferencias desde el botón **Preferencias** del modal o desde **Sincronización** en las opciones de la tarjeta:
+
+- **Preguntar siempre** (predeterminado): se muestra el modal.
+- **Usar siempre MAL** / **Usar siempre AnimeAV1**: la lista elegida reemplaza a la otra sin mostrar el modal. Verás un aviso con el resultado.
+- **Usar MAL durante…** / **Usar AnimeAV1 durante…**: igual que lo anterior, pero solo durante la cantidad de días que indiques (1 a 365), contados desde que guardas la preferencia. Al vencer, vuelve a preguntar. Las opciones muestran cuántos días quedan.
+
+Por defecto la preferencia es global (vale para todos los animes). Al guardarla puedes marcar **Solo para este anime**: ese anime pasa a tener su propia preferencia, que manda sobre la global mientras esté vigente. Para volver a la global, elige **Usar la preferencia global** y guarda.
+
+Por seguridad:
+
+- Una resolución automática **nunca elimina** un anime: si el lado elegido no tiene el anime en su lista, se muestra el modal igualmente.
+- Un vínculo recién creado (o cambiado) siempre muestra el modal la primera vez. Se considera confirmado cuando ambas listas tienen el anime y no difieren (se toleran las diferencias de precisión en fechas y puntuación), cuando resuelves el modal, o cuando haces un cambio desde AnimeAV1 que se refleja en MAL (marcar un capítulo, cambiar el formulario, el estado o la puntuación).
+- Si la resolución automática falla, también se muestra el modal.
+
 ## Privacidad
 
 - Tus credenciales y los vínculos entre animeav1 y MAL se guardan **solo en tu navegador** (`storage.local`) y no salen de tu dispositivo.
@@ -141,8 +157,7 @@ Cuando el anime ya está vinculado y los datos de MAL y de AnimeAV1 son distinto
 
 ## Hoja de ruta
 
-- **v1.3.0**
-  - Ajustes de sincronización: elegir si las diferencias se resuelven siempre a favor de MAL o de AnimeAV1 (sin mostrar el modal) y si la puntuación se sincroniza automáticamente.
+- **v1.3.0** Sin planes
 
 ## Licencia
 
