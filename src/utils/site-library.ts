@@ -1,3 +1,5 @@
+import { SITE } from './site-contract'
+
 export interface SiteListEntry {
   status: number
   episode: number
@@ -47,8 +49,25 @@ interface DataNode {
   data?: unknown[]
 }
 
-export async function fetchSiteLibrary(slug: string): Promise<SiteLibrary | null> {
-  const res = await fetch(`/media/${slug}/__data.json`, { credentials: 'include', cache: 'no-store' })
+const CACHE_TTL_MS = 3000
+const cache = new Map<string, { at: number; promise: Promise<SiteLibrary | null> }>()
+
+// Lecturas cercanas del mismo slug comparten un fetch. Quien vaya a decidir una escritura debe pedir `fresh`.
+export function fetchSiteLibrary(slug: string, { fresh = false } = {}): Promise<SiteLibrary | null> {
+  const hit = cache.get(slug)
+  if (!fresh && hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.promise
+
+  const promise = requestSiteLibrary(slug)
+  cache.set(slug, { at: Date.now(), promise })
+  // Un fallo no debe quedar cacheado.
+  promise.catch(() => {
+    if (cache.get(slug)?.promise === promise) cache.delete(slug)
+  })
+  return promise
+}
+
+async function requestSiteLibrary(slug: string): Promise<SiteLibrary | null> {
+  const res = await fetch(SITE.libraryDataUrl(slug), { credentials: 'include', cache: 'no-store' })
   if (!res.ok) return null
 
   const json = (await res.json()) as { nodes: (DataNode | null)[] }
@@ -66,8 +85,17 @@ export async function fetchSiteLibrary(slug: string): Promise<SiteLibrary | null
   return null
 }
 
-export async function fetchSiteListEntry(slug: string): Promise<SiteListEntry | null> {
-  return (await fetchSiteLibrary(slug))?.entry ?? null
+// Elimina la entrada del usuario (status -1, igual que "Eliminar de lista" del dropdown del sitio).
+export async function deleteSiteEntry(mediaId: number): Promise<void> {
+  cache.clear()
+  const res = await fetch(SITE.libraryApiPath, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ mediaId, status: -1 }),
+    credentials: 'include'
+  })
+  cache.clear()
+  if (!res.ok) throw new Error(`site_delete_failed:${res.status}`)
 }
 
 // Envía el mismo form action que usa el modal del sitio (mediaId confirmado con la request real).
@@ -76,12 +104,14 @@ export async function saveSiteListEntry(mediaId: number, fields: Record<string, 
   body.set('mediaId', String(mediaId))
   for (const [k, v] of Object.entries(fields)) body.set(k, v)
 
-  const res = await fetch('/cuenta/listas?/library', {
+  cache.clear()
+  const res = await fetch(SITE.libraryActionUrl, {
     method: 'POST',
     body,
     credentials: 'include',
-    headers: { 'x-sveltekit-action': 'true' }
+    headers: SITE.actionHeaders
   })
+  cache.clear()
   const result = (await res.json().catch(() => null)) as { type?: string } | null
   if (!res.ok || result?.type !== 'success') {
     throw new Error(`site_save_failed:${result?.type ?? res.status}`)

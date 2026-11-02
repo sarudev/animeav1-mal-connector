@@ -107,6 +107,7 @@ export async function sendMessage(message: SEARCH_ANIME): Promise<SEARCH_ANIME_R
 export async function sendMessage(message: GET_DETAILS): Promise<GET_DETAILS_RESPONSE>
 export async function sendMessage(message: UPDATE_SCORE): Promise<UPDATE_SCORE_RESPONSE>
 export async function sendMessage(message: UPDATE_LIST): Promise<UPDATE_LIST_RESPONSE>
+export async function sendMessage(message: DELETE_LIST): Promise<DELETE_LIST_RESPONSE>
 export async function sendMessage(message: TOGGLE_WATCHED): Promise<TOGGLE_WATCHED_RESPONSE>
 export async function sendMessage(message: GET_MAL_AUTH): Promise<GET_MAL_AUTH_RESPONSE>
 export async function sendMessage(message: CLEAR_BADGE): Promise<CLEAR_BADGE_RESPONSE>
@@ -208,6 +209,12 @@ export default defineBackground(() => {
             const { id, update } = message
             const result = await updateListStatus(id, update)
             sendResponse({ ok: true, data: { status: result } } satisfies UPDATE_LIST_RESPONSE)
+            break
+          }
+
+          case 'DELETE_LIST': {
+            await deleteListStatus(message.id)
+            sendResponse({ ok: true, data: undefined } satisfies DELETE_LIST_RESPONSE)
             break
           }
 

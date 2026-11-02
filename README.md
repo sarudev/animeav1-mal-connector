@@ -2,7 +2,7 @@
 
 Extensión de navegador que sincroniza automáticamente tu progreso de **animeav1.com** con tu lista de **MyAnimeList (MAL)**. Marcás un capítulo como visto en animeav1 y la extensión actualiza MAL por vos.
 
-> **Versión actual:** v1.1.0
+> **Versión actual:** v1.2.0
 > Proyecto no oficial. No está afiliado ni respaldado por MyAnimeList ni por AnimeAV1.
 
 ---
@@ -105,9 +105,13 @@ La extensión actúa tanto en la ficha de un anime como en las páginas de **epi
 Además de marcar capítulos, la extensión mantiene alineada tu lista de **MAL** con la de **AnimeAV1** (estado, episodios vistos, fecha de inicio y fecha de fin).
 
 - **Del sitio hacia MAL**: al guardar el formulario "Agregar a lista" de AnimeAV1 o cambiar el estado con el desplegable, se actualiza MAL. Si MAL no responde, verás un aviso y la diferencia se detecta la próxima vez que recargues la página.
-- **Fechas**: al marcar un capítulo como visto, MAL registra la fecha de inicio (y la de fin al completar). La extensión copia esas fechas a AnimeAV1 si ahí están vacías.
+- **Estado y fechas al marcar capítulos**: al marcar o desmarcar un capítulo, MAL puede pasar a "Viendo" o "Completado" y registra las fechas de inicio y fin. La extensión copia ese estado y esas fechas a AnimeAV1 (las fechas solo si ahí están vacías).
+- **Cualquier cambio hecho en el sitio**: la extensión detecta las requests de lista de AnimeAV1 (desplegable de estado, "marcar hasta el episodio anterior"…) y copia el resultado a MAL si difiere. Si el sitio deja un anime como "Completado" con episodios sin ver (por ejemplo, al marcar hasta el episodio anterior), pasa a "Viendo" en ambos sitios.
+- **Anime completado**: si el estado final es "Completado" y se conoce el total de episodios, los episodios vistos se fijan en ese total, tanto al guardar el formulario como en el modal de diferencias (AnimeAV1 ignora el número en ese caso).
 - **Puntuación**: la nota que pones con el slider de la extensión (1 a 10) se refleja también en AnimeAV1, redondeada a su escala de 1 a 5. Si cambias la nota desde el formulario del sitio, solo se envía a MAL cuando no es equivalente a la que ya tienes, para no perder precisión, y una nota vacía nunca borra la de MAL.
-- **Eliminar de la lista**: si usás "Eliminar de lista" en AnimeAV1, **no se elimina nada en MAL**; solo se muestra un aviso.
+- **Eliminar de la lista**: "Eliminar de lista" en el desplegable de AnimeAV1 **no elimina nada en MAL**; solo se muestra un aviso. Para eliminar de ambos sitios usa el botón discreto **Eliminar** (en rojo) de las opciones de la tarjeta, que solo aparece si el anime está en alguna de las dos listas. Se pide confirmación y no se puede deshacer.
+- **Recarga**: cuando la extensión escribe datos en AnimeAV1 (modal de diferencias, eliminación, o desmarcar un capítulo que cambia su estado), la página se recarga sola para que su interfaz lea los datos nuevos, y el aviso se muestra después. Marcar un capítulo como visto y los cambios de puntuación no recargan.
+- **Fechas**: AnimeAV1 no admite fechas vacías, así que una fecha vacía nunca la borra; y si MAL tiene `2017-03`, un `2017-03-01` del formulario no la modifica (si el día es otro, sí).
 
 ### Modal "Tu lista no coincide"
 
@@ -116,10 +120,11 @@ Cuando el anime ya está vinculado y los datos de MAL y de AnimeAV1 son distinto
 - **Elegir una lista completa**: tocá el título (**MAL** o **AnimeAV1**). Esa lista se toma como fuente de verdad y **reemplaza por completo** a la otra, incluidas las fechas vacías.
 - **Elegir campo por campo**: tocá un dato concreto (estado, episodios, inicio o fin) de cualquiera de los dos lados. Al elegir uno, su equivalente del otro lado se deselecciona; volvé a tocarlo para quitar la elección. Podés partir de una lista completa y cambiar solo algunos campos.
 - **Continuar**: se habilita cuando todos los datos que difieren tienen una elección. Los datos elegidos se aplican en ambos lados.
-- Si el anime solo está en una de las listas, la otra queda deshabilitada y se crea a partir de la que tiene datos.
+- Si el anime solo está en una de las listas, puedes elegir la que tiene datos (se crea la otra) o **elegir la lista vacía**: aparece una advertencia en rojo y el botón pasa a "Eliminar y continuar", que **elimina el anime del otro sitio** sin posibilidad de deshacer.
 - Las fechas incompletas de MAL (solo año, o año y mes) se consideran iguales a la fecha completa de AnimeAV1 que empiece igual, así que no generan el modal por sí solas. Al escribirlas en AnimeAV1 se completan con `01` (por ejemplo, `2024` pasa a `2024-01-01`).
 - **Puntuación**: AnimeAV1 usa 5 niveles y MAL 10, así que se comparan en la escala de AnimeAV1 (la nota de MAL se redondea hacia arriba: 7 u 8 equivalen a 4/5) y "sin nota" en un lado equivale a "sin nota" en el otro. Notas equivalentes no se consideran una diferencia y MAL conserva su valor preciso.
 - Las notas del formulario del sitio no forman parte de esta comparación.
+- **Teclado**: el modal se puede usar sin mouse. Las flechas te mueven entre datos, `Enter` o `Espacio` eligen, `1` elige toda la lista de MAL, `2` toda la de AnimeAV1 y `Ctrl+Enter` continúa. `Tab` no sale del modal.
 
 ## Privacidad
 
@@ -136,7 +141,8 @@ Cuando el anime ya está vinculado y los datos de MAL y de AnimeAV1 son distinto
 
 ## Hoja de ruta
 
-- **v1.3.0** No planeada
+- **v1.3.0**
+  - Ajustes de sincronización: elegir si las diferencias se resuelven siempre a favor de MAL o de AnimeAV1 (sin mostrar el modal) y si la puntuación se sincroniza automáticamente.
 
 ## Licencia
 

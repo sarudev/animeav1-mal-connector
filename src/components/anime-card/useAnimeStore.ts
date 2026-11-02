@@ -43,6 +43,7 @@ interface AnimeStore  extends AnimeStoreVars {
   patch: (partial: Partial<AnimeStoreVars>) => void
   setDetails: (d: MalAnime) => void
   setListStatus: (s: MalListStatus) => void
+  setListCleared: () => void
   setUnlinked: () => void
 }
 
@@ -112,6 +113,7 @@ export const useAnimeStore = create<AnimeStore>(set => ({
       lastConfirmedScore: s.score,
       watchedEpisodes: s.num_episodes_watched
     }),
+  setListCleared: () => set({ listStatus: null, status: null, score: 0, lastConfirmedScore: 0, watchedEpisodes: 0 }),
   setUnlinked: () =>
     set(state => ({
       ...INITIAL,

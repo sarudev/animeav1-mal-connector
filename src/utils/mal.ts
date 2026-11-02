@@ -190,3 +190,13 @@ export async function updateListStatus(id: number, fields: MalListUpdate): Promi
     body
   })
 }
+
+// Si el anime no estaba en la lista, MAL responde 404: el resultado deseado ya se cumple.
+export async function deleteListStatus(id: number): Promise<void> {
+  try {
+    await malFetch(`/anime/${id}/my_list_status`, false, { method: 'DELETE' })
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('(404)')) return
+    throw e
+  }
+}

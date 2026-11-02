@@ -24,7 +24,8 @@ export function AuthFormActions({ onCleared }: AuthFormActionsProps) {
       useAnimeStore.getState().setCredentialsCleared()
       pushToast('Credenciales borradas')
       onCleared()
-    } catch {
+    } catch (e) {
+      logger.error('no se pudieron borrar las credenciales', e)
       pushToast('No se pudieron borrar las credenciales', 'error')
     } finally {
       setClearing(false)

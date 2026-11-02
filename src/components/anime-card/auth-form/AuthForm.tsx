@@ -86,7 +86,8 @@ export default function AuthForm() {
       }
       pushToast(res.data.user ? `Conectado a MAL como ${res.data.user.name}` : 'Conectado a MAL')
       notifyReconnected()
-    } catch {
+    } catch (e) {
+      logger.error('no se pudo conectar con MAL', e)
       setError('No se pudo conectar con MAL.')
     } finally {
       setConnecting(false)

@@ -206,7 +206,8 @@ export const useLinkFormStore = create<LinkFormState>((set, get) => {
           return
         }
         set({ selectedResult: { ...res.data.details, id: parsed } as MalAnime })
-      } catch {
+      } catch (e) {
+        logger.warn('no se pudo consultar el ID manual en MAL', e)
         if (requestId === manualRequestId) set({ manualError: 'No se pudo consultar MAL.' })
       } finally {
         if (requestId === manualRequestId) set({ manualLoading: false })

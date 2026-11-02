@@ -35,7 +35,15 @@ const MAL_TO_SITE: Record<MalStatus, string> = {
   dropped: '4'
 }
 
-export function siteToSnapshot(data: Record<string, unknown> | null | undefined): ListSnapshot | null {
+export interface SiteSource {
+  status?: unknown
+  episode?: unknown
+  startDate?: unknown
+  endDate?: unknown
+  rating?: unknown
+}
+
+export function siteToSnapshot(data: SiteSource | null | undefined): ListSnapshot | null {
   if (!data) return null
   const status = SITE_TO_MAL[String(data.status)]
   if (!status) return null
@@ -72,33 +80,52 @@ function padDate(d: string): string {
 }
 
 // Una fecha parcial coincide con cualquier fecha completa que empiece igual (lo que AnimeAV1 autocompleta).
+// AnimeAV1 no admite fechas vacías, así que una fecha vacía tampoco se considera diferencia: solo falta completarla.
 export function datesMatch(a: string, b: string): boolean {
   if (a === b) return true
+  if (!a || !b) return true
   if (isPartialDate(a) && !isPartialDate(b)) return b.startsWith(a)
   if (isPartialDate(b) && !isPartialDate(a)) return a.startsWith(b)
   return false
 }
 
-export function snapshotsDiffer(a: ListSnapshot | null, b: ListSnapshot | null): boolean {
-  if (!a || !b) return a !== b
-  return (
-    a.status !== b.status ||
-    a.episodes !== b.episodes ||
-    !datesMatch(a.startDate, b.startDate) ||
-    !datesMatch(a.endDate, b.endDate) ||
-    !scoresMatch(a.score, b.score)
-  )
+// `full` es exactamente lo que AnimeAV1 autocompleta a partir de la fecha parcial de MAL (2017-03 → 2017-03-01).
+function isPaddedOf(full: string, partial: string | undefined): boolean {
+  return !!partial && isPartialDate(partial) && padDate(partial) === full
 }
 
-// Con clearEmptyDates se comporta como un PUT: una fecha vacía borra la que tenga MAL.
-// Si se pasa currentMalScore (cambio originado en AnimeAV1), la nota solo se envía cuando
-// AnimeAV1 tiene una y no es equivalente a la de MAL: así no se pierde precisión ni se borra la nota.
-export function snapshotToMalUpdate(s: ListSnapshot, clearEmptyDates = true, currentMalScore?: number): MalListUpdate {
+// Un anime completado tiene todos los episodios vistos (AnimeAV1 ignora el número en ese caso).
+export function normalizeCompleted(s: ListSnapshot, total: number): ListSnapshot {
+  return s.status === 'completed' && total > 0 ? { ...s, episodes: total } : s
+}
+
+// Si el sitio deja un anime "completado" con episodios sin ver (p. ej. al marcar hasta el anterior), pasa a "viendo".
+export function reopenIfIncomplete(s: ListSnapshot, total: number): ListSnapshot {
+  return s.status === 'completed' && total > 0 && s.episodes < total ? { ...s, status: 'watching' } : s
+}
+
+export function snapshotsDiffer(a: ListSnapshot | null, b: ListSnapshot | null): boolean {
+  if (!a || !b) return a !== b
+  return FIELD_KEYS.some(key => !fieldMatches(key, a, b))
+}
+
+interface MalUpdateOptions {
+  // Una fecha vacía borra la que tenga MAL (comportamiento de PUT).
+  clearEmptyDates?: boolean
+  // Estado actual de MAL: evita pisar una fecha parcial con su versión autocompletada por AnimeAV1.
+  current?: ListSnapshot | null
+  // Cambio originado en AnimeAV1: la nota solo se envía si AnimeAV1 tiene una y no equivale a la de MAL,
+  // así no se pierde precisión ni se borra la nota.
+  preserveScore?: boolean
+}
+
+export function snapshotToMalUpdate(s: ListSnapshot, { clearEmptyDates = true, current = null, preserveScore = false }: MalUpdateOptions = {}): MalListUpdate {
   const update: MalListUpdate = { status: s.status, num_watched_episodes: s.episodes }
-  if (s.startDate || clearEmptyDates) update.start_date = s.startDate
-  if (s.endDate || clearEmptyDates) update.finish_date = s.endDate
-  if (currentMalScore === undefined) update.score = s.score
-  else if (s.score > 0 && !scoresMatch(s.score, currentMalScore)) update.score = s.score
+  const sendDate = (wanted: string, existing: string | undefined) => (wanted ? !isPaddedOf(wanted, existing) : clearEmptyDates)
+  if (sendDate(s.startDate, current?.startDate)) update.start_date = s.startDate
+  if (sendDate(s.endDate, current?.endDate)) update.finish_date = s.endDate
+  if (!preserveScore) update.score = s.score
+  else if (s.score > 0 && !scoresMatch(s.score, current?.score ?? 0)) update.score = s.score
   return update
 }
 
@@ -126,13 +153,29 @@ function autoSide(key: FieldKey, mal: ListSnapshot, site: ListSnapshot): Side {
 }
 
 export function resolveFields(mal: ListSnapshot, site: ListSnapshot, choice: FieldChoice): ListSnapshot {
-  const out: Record<string, string | number> = {}
-  for (const key of FIELD_KEYS) {
+  const from = (key: FieldKey): ListSnapshot => {
     // Con notas equivalentes se conserva siempre la de MAL, que es la más precisa.
     const side = key === 'score' && scoresMatch(mal.score, site.score) ? 'mal' : (choice[key] ?? autoSide(key, mal, site))
-    out[key] = (side === 'mal' ? mal : site)[key]
+    return side === 'mal' ? mal : site
   }
-  return out as unknown as ListSnapshot
+  return {
+    status: from('status').status,
+    episodes: from('episodes').episodes,
+    startDate: from('startDate').startDate,
+    endDate: from('endDate').endDate,
+    score: from('score').score
+  }
+}
+
+// ¿Hay que escribir en `target`? Un campo elegido explícitamente se escribe aunque solo cambie la precisión;
+// los demás solo si difieren de verdad. `wanted` debe estar en el mismo formato que `target` (ver padSnapshot).
+export function needsWrite(target: ListSnapshot | null, wanted: ListSnapshot, explicit: FieldChoice): boolean {
+  if (!target) return true
+  return FIELD_KEYS.some(key => {
+    if (key === 'score') return !scoresMatch(wanted.score, target.score)
+    if ((key === 'startDate' || key === 'endDate') && isPaddedOf(wanted[key], target[key])) return false
+    return explicit[key] ? wanted[key] !== target[key] : !fieldMatches(key, wanted, target)
+  })
 }
 
 export function padSnapshot(s: ListSnapshot): ListSnapshot {
@@ -146,14 +189,18 @@ export interface SiteExtra {
 
 // `private` se reenvía porque el form completo lo incluye; sin él, un guardado podría resetearlo.
 // Una casilla desmarcada no viaja en un form, así que solo se envía cuando es true.
-export function snapshotToSiteFields(s: ListSnapshot, extra: SiteExtra): Record<string, string> {
+// AnimeAV1 rechaza fechas vacías (el error ni siquiera está sanitizado): si falta una se conserva la que ya tenía
+// (`current`), y si tampoco hay, el campo se omite.
+export function snapshotToSiteFields(s: ListSnapshot, extra: SiteExtra, current: ListSnapshot | null = null): Record<string, string> {
   const fields: Record<string, string> = {
     status: MAL_TO_SITE[s.status],
     episode: String(s.episodes),
-    startDate: padDate(s.startDate),
-    endDate: padDate(s.endDate),
     notes: extra.notes
   }
+  const startDate = padDate(s.startDate || current?.startDate || '')
+  const endDate = padDate(s.endDate || current?.endDate || '')
+  if (startDate) fields.startDate = startDate
+  if (endDate) fields.endDate = endDate
   const rating = toSiteRating(s.score)
   if (rating > 0) fields.rating = String(rating)
   if (extra.private) fields.private = 'true'
