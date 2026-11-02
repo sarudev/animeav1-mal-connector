@@ -98,13 +98,34 @@ Para cambiar de cuenta o volver a conectar: **Opciones → Credenciales de MAL**
 2. La tarjeta intenta vincularlo con MAL automáticamente. Si no encuentra una coincidencia exacta, te muestra el formulario de vinculación.
 3. Marcá el capítulo como visto con el botón de animeav1: tu lista de MAL se actualiza y aparece una notificación.
 
-La extensión solo actúa dentro de páginas de **episodios**, no en la ficha general del anime.
+La extensión actúa tanto en la ficha de un anime como en las páginas de **episodios**.
+
+## Sincronización de listas y modal de diferencias
+
+Además de marcar capítulos, la extensión mantiene alineada tu lista de **MAL** con la de **AnimeAV1** (estado, episodios vistos, fecha de inicio y fecha de fin).
+
+- **Del sitio hacia MAL**: al guardar el formulario "Agregar a lista" de AnimeAV1 o cambiar el estado con el desplegable, se actualiza MAL. Si MAL no responde, verás un aviso y la diferencia se detecta la próxima vez que recargues la página.
+- **Fechas**: al marcar un capítulo como visto, MAL registra la fecha de inicio (y la de fin al completar). La extensión copia esas fechas a AnimeAV1 si ahí están vacías.
+- **Puntuación**: la nota que pones con el slider de la extensión (1 a 10) se refleja también en AnimeAV1, redondeada a su escala de 1 a 5. Si cambias la nota desde el formulario del sitio, solo se envía a MAL cuando no es equivalente a la que ya tienes, para no perder precisión, y una nota vacía nunca borra la de MAL.
+- **Eliminar de la lista**: si usás "Eliminar de lista" en AnimeAV1, **no se elimina nada en MAL**; solo se muestra un aviso.
+
+### Modal "Tu lista no coincide"
+
+Cuando el anime ya está vinculado y los datos de MAL y de AnimeAV1 son distintos, aparece un modal con las dos listas lado a lado. Los valores que difieren se resaltan. No se puede cerrar hasta elegir qué datos conservar:
+
+- **Elegir una lista completa**: tocá el título (**MAL** o **AnimeAV1**). Esa lista se toma como fuente de verdad y **reemplaza por completo** a la otra, incluidas las fechas vacías.
+- **Elegir campo por campo**: tocá un dato concreto (estado, episodios, inicio o fin) de cualquiera de los dos lados. Al elegir uno, su equivalente del otro lado se deselecciona; volvé a tocarlo para quitar la elección. Podés partir de una lista completa y cambiar solo algunos campos.
+- **Continuar**: se habilita cuando todos los datos que difieren tienen una elección. Los datos elegidos se aplican en ambos lados.
+- Si el anime solo está en una de las listas, la otra queda deshabilitada y se crea a partir de la que tiene datos.
+- Las fechas incompletas de MAL (solo año, o año y mes) se consideran iguales a la fecha completa de AnimeAV1 que empiece igual, así que no generan el modal por sí solas. Al escribirlas en AnimeAV1 se completan con `01` (por ejemplo, `2024` pasa a `2024-01-01`).
+- **Puntuación**: AnimeAV1 usa 5 niveles y MAL 10, así que se comparan en la escala de AnimeAV1 (la nota de MAL se redondea hacia arriba: 7 u 8 equivalen a 4/5) y "sin nota" en un lado equivale a "sin nota" en el otro. Notas equivalentes no se consideran una diferencia y MAL conserva su valor preciso.
+- Las notas del formulario del sitio no forman parte de esta comparación.
 
 ## Privacidad
 
 - Tus credenciales y los vínculos entre animeav1 y MAL se guardan **solo en tu navegador** (`storage.local`) y no salen de tu dispositivo.
 - La extensión no usa servidores propios ni recolecta datos de uso.
-- Las únicas conexiones de red son hacia `myanimelist.net` y `api.myanimelist.net`, y la lectura de la página `animeav1.com` donde se ejecuta.
+- Las únicas conexiones de red son hacia `myanimelist.net` y `api.myanimelist.net`, y la lectura y escritura de tu lista en `animeav1.com`, donde se ejecuta.
 
 ## Limitaciones conocidas
 
@@ -115,9 +136,7 @@ La extensión solo actúa dentro de páginas de **episodios**, no en la ficha ge
 
 ## Hoja de ruta
 
-- **v1.2.0**: 
-  - También disponible en página principal de un anime, no solo en un episodio.
-  - Soporte al modal de editar anime (que también aparece al marcar como no visto un capitulo anterior al último visto).
+- **v1.3.0** No planeada
 
 ## Licencia
 

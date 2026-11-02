@@ -43,6 +43,12 @@ export interface UPDATE_SCORE {
   id: number
 }
 
+export interface UPDATE_LIST {
+  type: 'UPDATE_LIST'
+  id: number
+  update: MalListUpdate
+}
+
 export interface TOGGLE_WATCHED {
   type: 'TOGGLE_WATCHED'
   slug: string
@@ -83,6 +89,7 @@ export type Message =
   | SEARCH_ANIME
   | GET_DETAILS
   | UPDATE_SCORE
+  | UPDATE_LIST
   | TOGGLE_WATCHED
   | CLEAR_BADGE
   | GET_MAL_STATUS
@@ -100,6 +107,7 @@ export type UNLINK_ANIME_RESPONSE = Response
 export type SEARCH_ANIME_RESPONSE = Response<{ results: MalAnime[] }>
 export type GET_DETAILS_RESPONSE = Response<{ details: MalAnime }>
 export type UPDATE_SCORE_RESPONSE = Response<{ status: MalListStatus }>
+export type UPDATE_LIST_RESPONSE = Response<{ status: MalListStatus }>
 export type TOGGLE_WATCHED_RESPONSE = Response<{ skipped?: boolean; status?: MalListStatus }>
 export type CLEAR_BADGE_RESPONSE = Response
 export type GET_MAL_STATUS_RESPONSE = Response<{ configured: boolean }>

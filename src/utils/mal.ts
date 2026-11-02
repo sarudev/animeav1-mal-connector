@@ -16,6 +16,14 @@ export interface MalListStatus {
   score: number
 }
 
+export interface MalListUpdate {
+  status?: MalListStatus['status']
+  num_watched_episodes?: number
+  start_date?: string
+  finish_date?: string
+  score?: number
+}
+
 export interface MalAnime {
   id: number
   title: string
@@ -78,7 +86,7 @@ function refreshAccessToken(auth: MalAuth) {
 export async function getAccessToken(): Promise<string> {
   let auth = await getMalAuth()
   if (!auth?.clientId || !auth.refreshToken) {
-    throw new MalAuthError('mal_not_configured', 'Faltan credenciales de MyAnimeList.')
+    throw new MalAuthError('mal_not_configured', 'Faltan credenciales de MAL.')
   }
 
   if (!auth.accessToken || !auth.accessTokenExpiry || Date.now() >= auth.accessTokenExpiry) {
@@ -112,7 +120,8 @@ async function malFetch<T = any>(path: string, retry = true, options: RequestIni
   }
 
   if (res.status === 204) return null as T
-  return res.json()
+  const text = await res.text()
+  return (text ? JSON.parse(text) : null) as T
 }
 
 export async function getCurrentUser(): Promise<MalUser> {
@@ -169,8 +178,12 @@ export async function getAnimeDetails(id: number): Promise<MalAnime> {
   return malFetch<MalAnime>(`/anime/${id}?${params.toString()}`)
 }
 
-export async function updateListStatus(id: number, fields: Record<string, string | number>): Promise<MalListStatus> {
-  const body = new URLSearchParams(fields as Record<string, string>)
+export async function updateListStatus(id: number, fields: MalListUpdate): Promise<MalListStatus> {
+  const body = new URLSearchParams(
+    Object.entries(fields)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, String(v)])
+  )
   return malFetch<MalListStatus>(`/anime/${id}/my_list_status`, false, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

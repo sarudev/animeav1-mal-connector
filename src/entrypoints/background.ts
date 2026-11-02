@@ -1,14 +1,9 @@
-import type { MalListStatus } from '@/utils/mal'
+import type { MalListStatus, MalListUpdate } from '@/utils/mal'
 import type { Response } from '@/utils/types'
 import { browser } from 'wxt/browser'
 
-function computeListUpdate(
-  cur: MalListStatus | null,
-  totalEpisodes: number,
-  episode: number,
-  watched: boolean
-): Record<string, string | number> | null {
-  const update: Record<string, string | number> = {}
+function computeListUpdate(cur: MalListStatus | null, totalEpisodes: number, episode: number, watched: boolean): MalListUpdate | null {
+  const update: MalListUpdate = {}
 
   if (watched) {
     if (!cur || cur.status !== 'watching') {
@@ -25,7 +20,6 @@ function computeListUpdate(
     }
   } else {
     if (!cur || (cur.status === 'completed' && episode < totalEpisodes)) {
-      console.log(`returned null`, { cur, totalEpisodes, episode })
       return null
     }
 
@@ -112,6 +106,7 @@ export async function sendMessage(message: UNLINK_ANIME): Promise<UNLINK_ANIME_R
 export async function sendMessage(message: SEARCH_ANIME): Promise<SEARCH_ANIME_RESPONSE>
 export async function sendMessage(message: GET_DETAILS): Promise<GET_DETAILS_RESPONSE>
 export async function sendMessage(message: UPDATE_SCORE): Promise<UPDATE_SCORE_RESPONSE>
+export async function sendMessage(message: UPDATE_LIST): Promise<UPDATE_LIST_RESPONSE>
 export async function sendMessage(message: TOGGLE_WATCHED): Promise<TOGGLE_WATCHED_RESPONSE>
 export async function sendMessage(message: GET_MAL_AUTH): Promise<GET_MAL_AUTH_RESPONSE>
 export async function sendMessage(message: CLEAR_BADGE): Promise<CLEAR_BADGE_RESPONSE>
@@ -209,6 +204,13 @@ export default defineBackground(() => {
             break
           }
 
+          case 'UPDATE_LIST': {
+            const { id, update } = message
+            const result = await updateListStatus(id, update)
+            sendResponse({ ok: true, data: { status: result } } satisfies UPDATE_LIST_RESPONSE)
+            break
+          }
+
           case 'TOGGLE_WATCHED': {
             const { slug, episode, watched } = message
             const result = await handleToggleWatched({ slug, episode, watched })
@@ -285,12 +287,9 @@ export default defineBackground(() => {
         interactive: true
       })
       const q = new URL(result!).searchParams
-      console.log('[test] volvió a:', result!.split('?')[0])
-      console.log('[test] parámetros recibidos:', [...q.keys()])
-      console.log('[test] state coincide:', q.get('state') === state)
 
       const code = q.get('code')
-      if (!code) return console.log('[test] sin code. error:', q.get('error'))
+      if (!code) return
 
       const body: Record<string, string> = { client_id: clientId, code, code_verifier: verifier, grant_type: 'authorization_code' }
       if (sendRedirect) body.redirect_uri = redirectUri
@@ -300,9 +299,6 @@ export default defineBackground(() => {
         body: new URLSearchParams(body)
       })
       const data = await res.json().catch(() => ({}))
-      console.log('[test] canje:', res.status, Object.keys(data))
-    } catch (e) {
-      console.log('[test] falló:', (e as Error).message)
-    }
+    } catch (_) {}
   }
 })

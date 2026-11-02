@@ -18,9 +18,11 @@ interface AnimeStoreVars {
   authForced: boolean
   reconnectNonce: number
   loading: boolean
+  listStatus: MalListStatus | null
+  detailsNonce: number
 }
 
-interface AnimeStore extends AnimeStoreVars {
+interface AnimeStore  extends AnimeStoreVars {
   setSlug: (slug: string) => void
   setId: (id: number | null) => void
   setTitle: (title: string) => void
@@ -58,7 +60,9 @@ const INITIAL: AnimeStoreVars = {
   view: 'linked',
   authForced: false,
   reconnectNonce: 0,
-  loading: true
+  loading: true,
+  listStatus: null,
+  detailsNonce: 0
 }
 
 export const useAnimeStore = create<AnimeStore>(set => ({
@@ -89,7 +93,9 @@ export const useAnimeStore = create<AnimeStore>(set => ({
   reset: () => set({ ...INITIAL }),
   patch: partial => set(partial),
   setDetails: d =>
-    set({
+    set(state => ({
+      detailsNonce: state.detailsNonce + 1,
+      listStatus: d.my_list_status ?? null,
       title: d.title,
       status: d.my_list_status?.status ?? null,
       score: d.my_list_status?.score ?? 0,
@@ -97,9 +103,10 @@ export const useAnimeStore = create<AnimeStore>(set => ({
       watchedEpisodes: d.my_list_status?.num_episodes_watched ?? 0,
       totalEpisodes: d.num_episodes ?? 0,
       picture: d.main_picture?.medium ?? ''
-    }),
+    })),
   setListStatus: s =>
     set({
+      listStatus: s,
       status: s.status,
       score: s.score,
       lastConfirmedScore: s.score,

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import useDebouncedEffect from '@/hooks/useDebouncedEffect'
 import { sendMessage } from '@/entrypoints/background'
+import { syncSiteScore } from '@/utils/site-score'
 import { useAnimeStore } from '../useAnimeStore'
 
 export function useScoreSync() {
@@ -23,6 +24,7 @@ export function useScoreSync() {
     if (res?.ok) {
       setLastConfirmedScore(newScore)
       pushToast('Puntuación actualizada')
+      syncSiteScore(slug, newScore).catch(() => pushToast('No se pudo reflejar la puntuación en AnimeAV1', 'error'))
     } else {
       setScore(lastConfirmedScore)
       pushToast(`Error al actualizar la puntuación: ${res?.error || res}`, 'error')

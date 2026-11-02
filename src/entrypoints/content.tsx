@@ -8,6 +8,12 @@ import { sendMessage } from './background'
 import '@/styles/tailwind.css'
 import { routeMalError, useAnimeStore } from '@/components/anime-card/useAnimeStore'
 import AnimeStrip from '@/components/anime-strip/AnimeStrip'
+import type { MalListUpdate } from '@/utils/mal'
+import { fetchSiteLibrary, saveSiteListEntry, type SiteListEntry } from '@/utils/site-library'
+import { updateSiteStatusButton } from '@/utils/site-ui'
+import { malToSnapshot, siteToSnapshot, snapshotsDiffer, snapshotToMalUpdate, snapshotToSiteFields } from '@/utils/list-sync'
+import SyncModal from '@/components/sync-modal/SyncModal'
+import { useSyncStore } from '@/components/sync-modal/useSyncStore'
 
 export default defineContentScript({
   matches: ['https://animeav1.com/*'],
@@ -91,12 +97,27 @@ export default defineContentScript({
       reactRoot = null
     }
 
-    const [toastUi, episodeCardUi, animeCardUi] = await Promise.all([
+    const [toastUi, syncModalUi, episodeCardUi, animeCardUi] = await Promise.all([
       createShadowRootUi(ctx, {
         name: 'mal-toast-holder',
         position: 'overlay',
         onMount: container => {
           createRoot(container).render(<ToastHolder />)
+        }
+      }),
+      createShadowRootUi(ctx, {
+        name: 'mal-sync-modal',
+        position: 'overlay',
+        isolateEvents: true,
+        onMount: (container, _, shadowHost) => {
+          const stop = watchTheme(shadowHost)
+          const root = createRoot(container)
+          root.render(<SyncModal />)
+          return { root, stop }
+        },
+        onRemove: mounted => {
+          mounted?.stop()
+          mounted?.root.unmount()
         }
       }),
       createShadowRootUi(ctx, {
@@ -121,6 +142,7 @@ export default defineContentScript({
       })
     ])
     toastUi.mount()
+    syncModalUi.mount()
 
     const cardUis = { episode: episodeCardUi, anime: animeCardUi }
 
@@ -202,7 +224,6 @@ export default defineContentScript({
 
           if (slug == null) return
 
-          console.log({ slug, episode, baselineWatched, attempts })
           void sendMessage({
             type: 'TOGGLE_WATCHED',
             slug,
@@ -233,6 +254,7 @@ export default defineContentScript({
 
               const completed = response.data.status.status === 'completed'
               pushToast(`Capítulo ${episode} marcado como visto${completed ? '. Anime completado' : ''}`)
+              void syncSiteDates(slug, response.data.status)
             })
             .catch(() => {
               pushToast(`No se pudo actualizar el capítulo ${episode} en MAL`, 'error')
@@ -342,6 +364,212 @@ export default defineContentScript({
     })
     ctx.onInvalidated(unsubscribeReconnect)
 
+    const unsubscribeDetails = useAnimeStore.subscribe((state, prev) => {
+      if (state.detailsNonce <= prev.detailsNonce) return
+      if (!currentSlug || state.slug !== currentSlug || state.id == null) return
+      void checkListSync(currentSlug, state.id, state.listStatus)
+    })
+    ctx.onInvalidated(unsubscribeDetails)
+
+    // --- Comparación de la lista de MAL contra la del sitio -----------------
+
+    async function checkListSync(slug: string, malId: number, malStatus: MalListStatus | null) {
+      try {
+        const library = await fetchSiteLibrary(slug)
+        if (!library || currentSlug !== slug) return
+
+        const mal = malToSnapshot(malStatus)
+        const site = siteToSnapshot(library.entry as Record<string, unknown> | null)
+        if (!snapshotsDiffer(mal, site)) return
+
+        useSyncStore.getState().open({
+          slug,
+          malId,
+          siteMediaId: library.mediaId,
+          siteExtra: { notes: library.entry?.notes ?? '', private: library.entry?.private ?? false },
+          mal,
+          site
+        })
+      } catch (e) {
+        console.log('[MAL] error comparando listas', e)
+      }
+    }
+
+    // MAL fija las fechas al marcar capítulos; el sitio no, así que se las copiamos si están vacías.
+    async function syncSiteDates(slug: string, malStatus: MalListStatus) {
+      if (!malStatus.start_date && !malStatus.finish_date) return
+      try {
+        const library = await fetchSiteLibrary(slug)
+        const site = siteToSnapshot(library?.entry as Record<string, unknown> | null)
+        if (!library?.entry || !site) return
+
+        const startDate = site.startDate || malStatus.start_date || ''
+        const endDate = site.endDate || malStatus.finish_date || ''
+        if (startDate === site.startDate && endDate === site.endDate) return
+
+        await saveSiteListEntry(
+          library.mediaId,
+          snapshotToSiteFields({ ...site, startDate, endDate }, { notes: library.entry.notes ?? '', private: library.entry.private })
+        )
+      } catch {
+        pushToast('No se pudieron actualizar las fechas en AnimeAV1', 'error')
+      }
+    }
+
+    // --- Modal "Agregar a lista" del sitio -----------------------------------
+    const LIST_FORM_SELECTOR = 'form[action*="/cuenta/listas?/library"]'
+    let listForm: HTMLFormElement | null = null
+
+    function readListForm(form: HTMLFormElement) {
+      return Object.fromEntries(new FormData(form))
+    }
+
+    function syncListModal() {
+      const form = document.querySelector<HTMLFormElement>(LIST_FORM_SELECTOR)
+      if (form === listForm) return
+      listForm = form
+      if (form) void refreshListForm(form)
+    }
+
+    function setFormField(form: HTMLFormElement, name: string, value: string) {
+      const el = form.elements.namedItem(name)
+      if (!(el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)) return
+      if (el.value === value) return
+      el.value = value
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+      el.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+
+    async function refreshListForm(form: HTMLFormElement) {
+      const slug = currentSlug
+      if (!slug) return
+
+      let touched = false
+      const markTouched = (e: Event) => {
+        if (e.isTrusted) touched = true
+      }
+      form.addEventListener('input', markTouched)
+      form.addEventListener('change', markTouched)
+
+      try {
+        const library = await fetchSiteLibrary(slug)
+        const entry = library?.entry
+        if (!entry || touched || !form.isConnected || currentSlug !== slug) return
+
+        setFormField(form, 'status', String(entry.status))
+        setFormField(form, 'episode', String(entry.episode ?? ''))
+        setFormField(form, 'startDate', entry.startDate ?? '')
+        setFormField(form, 'endDate', entry.endDate ?? '')
+        setFormField(form, 'notes', entry.notes ?? '')
+        if (entry.rating) {
+          const radio = form.querySelector<HTMLInputElement>(`input[name="rating"][value="${entry.rating}"]`)
+          if (radio && !radio.checked) {
+            radio.checked = true
+            radio.dispatchEvent(new Event('input', { bubbles: true }))
+            radio.dispatchEvent(new Event('change', { bubbles: true }))
+          }
+        }
+        const snapshot = siteToSnapshot(entry as unknown as Record<string, unknown>)
+        if (snapshot) updateSiteStatusButton(snapshot.status)
+      } catch {}
+    }
+
+    function buildMalUpdate(data: Record<string, unknown>): MalListUpdate | null {
+      const snapshot = siteToSnapshot(data)
+      return snapshot && snapshotToMalUpdate(snapshot, true, useAnimeStore.getState().score)
+    }
+
+    async function pushFormToMal(form: HTMLFormElement) {
+      const slug = currentSlug
+      const { id, slug: storeSlug } = useAnimeStore.getState()
+      if (!slug || id == null || storeSlug !== slug) return
+
+      const formData = readListForm(form)
+      const update = buildMalUpdate(formData)
+      console.log('[MAL] submit → UPDATE_LIST', {
+        formRating: formData.rating ?? null,
+        storeMalScore: useAnimeStore.getState().score,
+        update
+      })
+      if (!update) return
+
+      try {
+        const res = await sendMessage({ type: 'UPDATE_LIST', id, update })
+        if (routeMalError(res)) {
+          pushToast('Reconecta tu cuenta de MAL para sincronizar', 'error')
+          return
+        }
+        if (!res.ok) throw new Error(res.error)
+        if (currentSlug === slug) useAnimeStore.getState().setListStatus(res.data.status)
+        pushToast('Lista de MAL actualizada')
+      } catch {
+        pushToast('No se pudo actualizar tu lista en MAL. Se volverá a comparar al recargar', 'error')
+      }
+    }
+
+    function handleDocumentSubmit(event: SubmitEvent) {
+      const form = event.target
+      if (!(form instanceof HTMLFormElement) || !form.matches(LIST_FORM_SELECTOR)) return
+      void pushFormToMal(form)
+    }
+
+    document.addEventListener('submit', handleDocumentSubmit, true)
+    ctx.onInvalidated(() => document.removeEventListener('submit', handleDocumentSubmit, true))
+
+    // Dropdown de estado del sitio: POST a /api/user/library. "Eliminar de lista" nunca se replica en MAL.
+    const DROPDOWN_ACTIONS: Record<string, number | 'delete'> = {
+      viendo: 0,
+      'por ver': 1,
+      completado: 2,
+      pausado: 3,
+      descartado: 4,
+      'eliminar de lista': 'delete'
+    }
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+    // El request del sitio no es observable desde aquí: se espera a que el servidor refleje el cambio y se copia a MAL.
+    async function pushDropdownToMal(status: number) {
+      const slug = currentSlug
+      const { id, slug: storeSlug } = useAnimeStore.getState()
+      if (!slug || id == null || storeSlug !== slug) return
+
+      try {
+        let entry: SiteListEntry | null = null
+        for (let attempt = 0; attempt < 10 && entry?.status !== status; attempt++) {
+          await sleep(400)
+          if (currentSlug !== slug) return
+          entry = (await fetchSiteLibrary(slug))?.entry ?? null
+        }
+        if (entry?.status !== status) throw new Error('site_not_settled')
+
+        const snapshot = siteToSnapshot(entry as unknown as Record<string, unknown>)
+        if (!snapshot) throw new Error('bad_entry')
+        // Sin borrar fechas: solo cambió el estado, no se pidió limpiar nada.
+        const res = await sendMessage({ type: 'UPDATE_LIST', id, update: snapshotToMalUpdate(snapshot, false, useAnimeStore.getState().score) })
+        if (routeMalError(res)) return
+        if (!res.ok) throw new Error(res.error)
+        if (currentSlug === slug) useAnimeStore.getState().setListStatus(res.data.status)
+        pushToast('Estado actualizado en MAL')
+      } catch {
+        pushToast('No se pudo actualizar tu lista en MAL. Se volverá a comparar al recargar', 'error')
+      }
+    }
+
+    function handleMenuItemClick(event: MouseEvent) {
+      if (!(event.target instanceof Element)) return
+      const item = event.target.closest('[data-dropdown-menu-item]')
+      const action = DROPDOWN_ACTIONS[item?.textContent?.trim().toLowerCase() ?? '']
+      if (action === undefined) return
+      if (action === 'delete') {
+        pushToast('No se puede eliminar un anime de MAL; solo se elimina de AnimeAV1', 'error')
+        return
+      }
+      void pushDropdownToMal(action)
+    }
+
+    document.addEventListener('click', handleMenuItemClick, true)
+    ctx.onInvalidated(() => document.removeEventListener('click', handleMenuItemClick, true))
+
     // -------------------------------------------------------------------------
 
     function handleNavigation() {
@@ -367,6 +595,7 @@ export default defineContentScript({
       currentKind = parsed.kind
 
       if (slugChanged) {
+        useSyncStore.getState().close()
         lastKnownWatched = null
         resolvedSlug = null
         resolvingSlug = null
@@ -386,6 +615,8 @@ export default defineContentScript({
 
     let lastHref = window.location.href
     const rootObserver = new MutationObserver(() => {
+      syncListModal()
+
       if (window.location.href !== lastHref) {
         lastHref = window.location.href
         handleNavigation()
